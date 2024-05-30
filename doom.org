@@ -253,7 +253,7 @@ here as-is for now, as it is quite well structured and clear.
          ;;layout            ; auie,ctsrnm is the superior home row
 
          :completion
-         company           ; the ultimate code completion backend
+         (company +childframe)           ; the ultimate code completion backend
          ;;(corfu +orderless)  ; complete with cap(f), cape and a flying feather!
          ;;helm              ; the *other* search engine for love and life
          ;;ido               ; the other *other* search engine...
@@ -874,6 +874,22 @@ the last thing to run!
 #+begin_src emacs-lisp
 (use-package! dune-format
   :hook (dune-mode . dune-format-on-save-mode))
+#+end_src
+** Co-pilot setup
+#+begin_src emacs-lisp :tangle packages.el
+(package! copilot
+  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
+#+end_src
+
+#+begin_src emacs-lisp
+;; accept completion from copilot and fallback to company
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)))
 #+end_src
 * Prose and Literate Programming
 ** Org mode
