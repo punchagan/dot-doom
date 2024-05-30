@@ -875,6 +875,12 @@ the last thing to run!
 (use-package! dune-format
   :hook (dune-mode . dune-format-on-save-mode))
 #+end_src
+*** Merlin
+Ocaml LSP can't do everything that merlin does, yet!
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! merlin)
+#+end_src
 ** Co-pilot setup
 #+begin_src emacs-lisp :tangle packages.el
 (package! copilot
