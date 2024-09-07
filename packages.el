@@ -54,6 +54,8 @@
 
 (package! vlf)
 
+(package! magit-todos)
+
 ;; Link to specific parts of a file
 (package! git-link)
 
