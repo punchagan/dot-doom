@@ -253,8 +253,6 @@
     (setq magit-todos-exclude-globs '("*.css.map")))
 
   (use-package! projectile
-    :init
-    (projectile-mode +1)
     :custom
     (projectile-project-search-path `((,pc/code-directory . 4)))
     (projectile-indexing-method 'alien)
