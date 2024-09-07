@@ -812,6 +812,11 @@ Ocaml LSP can't do everything that merlin does, yet!
 #+begin_src emacs-lisp :tangle packages.el
 (package! merlin)
 #+end_src
+
+#+begin_src emacs-lisp
+(use-package! merlin
+  :hook (tuareg-mode . merlin-mode))
+#+end_src
 ** Co-pilot setup
 #+begin_src emacs-lisp :tangle packages.el
 (package! copilot

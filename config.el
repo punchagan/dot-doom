@@ -310,6 +310,9 @@
 (use-package! dune-format
   :hook (dune-mode . dune-format-on-save-mode))
 
+(use-package! merlin
+  :hook (tuareg-mode . merlin-mode))
+
 ;; accept completion from copilot and fallback to company
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
