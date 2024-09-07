@@ -571,3 +571,7 @@
 
 (after! org
   (require 'org-bookmark-heading))
+
+(use-package! okra
+  :custom
+  (okra-tarides-admin-repo "~/code/segfault/admin"))

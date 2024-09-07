@@ -1169,6 +1169,17 @@ Refile all the entries in Inbox.org
 (after! org
   (require 'org-bookmark-heading))
 #+end_src
+** Tarides weeklies
+#+begin_src emacs-lisp :tangle packages.el
+(package! okra
+  :recipe (:local-repo "~/code/segfault/okra/emacs"))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! okra
+  :custom
+  (okra-tarides-admin-repo "~/code/segfault/admin"))
+#+end_src
 
 * COMMENT Local Variables
 # Local Variables:

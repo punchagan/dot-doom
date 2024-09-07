@@ -83,3 +83,6 @@
             :recipe (:local-repo "~/code/my-repos/ox-gist"))
 
 (package! org-bookmark-heading)
+
+(package! okra
+  :recipe (:local-repo "~/code/segfault/okra/emacs"))
