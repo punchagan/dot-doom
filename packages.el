@@ -57,10 +57,6 @@
 ;; Link to specific parts of a file
 (package! git-link)
 
-  (package! blacken)
-
-  (package! poetry)
-
   (package! md-readme)
 
   (package! package-lint)

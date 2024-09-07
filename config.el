@@ -296,49 +296,6 @@
   (use-package typescript-mode
     :defer t)
 
-  (use-package anaconda-mode
-    :demand t
-    :after python
-    :hook ((python-mode . anaconda-mode)
-           (python-mode . anaconda-eldoc-mode)))
-
-  (defun pc/autoflake-remove-unused-imports-before-save ()
-    (interactive)
-    (when (eq major-mode 'python-mode)
-      (if (executable-find "autoflake")
-          (progn
-            (shell-command (format "autoflake --remove-all-unused-imports -i %s"
-                                   (shell-quote-argument (buffer-file-name))))
-            (revert-buffer t t t))
-        (message "Error: Cannot find autoflake executable."))))
-
-  ;; NOTE: The hook is added after py-isort hook has been added below
-
-  (defun pc/py-clean-up-imports-hook ()
-    "Hooks that clean up python mode imports."
-    ;; Hooks are added at the head of the before-save-hook list. So, hooks should
-    ;; be added here in the reverse order in which they should be applied.
-    (add-hook 'before-save-hook 'py-isort-before-save nil t)
-    ;; The function is called on the file, and not buffer. So, we call it after saving the file
-    (add-hook 'after-save-hook 'pc/autoflake-remove-unused-imports-before-save nil t))
-
-  (use-package py-isort
-    :demand t
-    :after python
-    :hook (python-mode . pc/py-clean-up-imports-hook))
-
-  (use-package! blacken
-    :demand t
-    :after python
-    :hook (python-mode . blacken-mode)
-    :config
-    (setq blacken-line-length 100))
-
-  (use-package! poetry
-    :demand t
-    :after python
-    :hook (python-mode . poetry-tracking-mode))
-
 (use-package! reason-mode
   :hook (reason-mode . setup-reason-mode)
 
