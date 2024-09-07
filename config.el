@@ -235,15 +235,15 @@
     (magit-clone-set-remote.pushDefault t))
 
   ;; Incremental blame?
-  (use-package git-blamed
+  (use-package! git-blamed
     :defer t)
 
   ;; Major mode for editing git configuration files
-  (use-package git-modes
+  (use-package! git-modes
     :defer t)
 
   ;; Highlight diffs
-  (use-package diff-hl
+  (use-package! diff-hl
     :defer
     :config
     (global-diff-hl-mode))
@@ -262,7 +262,7 @@
     :bind (:map projectile-mode-map
                 ("C-c p" . projectile-command-map)))
 
-  (use-package ag
+  (use-package! ag
     :defer t)
 
   (setq js-indent-level 2)
@@ -278,7 +278,7 @@
     (interactive)
     (setq-local whitespace-style nil))
 
-  (use-package prettier-js
+  (use-package! prettier-js
     :defer t
     :config
     (add-hook 'js-mode-hook 'prettier-js-mode)
@@ -293,7 +293,7 @@
                                  (pc/enable-minor-mode
                                   '("\\.jsx?\\'" . prettier-js-mode)))))
 
-  (use-package typescript-mode
+  (use-package! typescript-mode
     :defer t)
 
 (use-package! reason-mode
@@ -359,10 +359,10 @@
   (setq org-agenda-skip-scheduled-if-done t)
   (setq org-agenda-skip-deadline-if-done t)
 
-  (use-package org-super-agenda
+  (use-package! org-super-agenda
     :defer t)
 
-  (use-package org-ql
+  (use-package! org-ql
       :defer t)
 
   ;; FIXME: Add some filters and stuff to make it more useful?
@@ -494,9 +494,9 @@
   (require 'ob-emacs-lisp)
   (require 'ob-python)
 
-  (use-package markdown-mode :defer t)
+  (use-package! markdown-mode :defer t)
 
-  (use-package markdown-toc :defer t)
+  (use-package! markdown-toc :defer t)
 
   ;; Copied from newer org-mode since ox-hugo needs it
 
