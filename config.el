@@ -518,12 +518,13 @@
            (fname (org-hugo-slug title)))
       (mapconcat #'identity
                  `(
-                   ,(concat "* TODO " title " :noexport:")
+                   ,(concat "* DRAFT " title " :noexport:")
                    ":PROPERTIES:"
                    ,(concat ":EXPORT_FILE_NAME: " fname)
                    ,(concat ":EXPORT_DATE: " date) ;Enter current date and time
                    ":EXPORT_DESCRIPTION:"
                    ":EXPORT_HUGO_CUSTOM_FRONT_MATTER:"
+                   ":EXPORT_HUGO_SECTION: drafts"
                    ":END:"
                    "%?\n")          ;Place the cursor here finally
                  "\n")))
