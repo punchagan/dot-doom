@@ -840,13 +840,14 @@ Ocaml LSP can't do everything that merlin does, yet!
 Some basic org-mode configuration
 
 #+BEGIN_SRC emacs-lisp
-  (use-package! org
-    :bind (("C-c c" . org-capture)
-           (:map org-mode-map
-                 ("C-c C-q" . counsel-org-tag))))
+(use-package! org
+  :bind (("C-c c" . org-capture)
+         (:map org-mode-map
+               ("C-c C-q" . counsel-org-tag))))
 
-  (setq org-directory "~/.life-in-plain-text/src/")
-  (setq org-return-follows-link t)
+(setq org-directory "~/.life-in-plain-text/src/")
+(setq org-return-follows-link t)
+(setq org-insert-heading-respect-content nil)
 #+END_SRC
 *** Paste HTML as org text
 

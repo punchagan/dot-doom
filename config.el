@@ -320,13 +320,14 @@
               ("C-TAB" . 'copilot-accept-completion-by-word)
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
 
-  (use-package! org
-    :bind (("C-c c" . org-capture)
-           (:map org-mode-map
-                 ("C-c C-q" . counsel-org-tag))))
+(use-package! org
+  :bind (("C-c c" . org-capture)
+         (:map org-mode-map
+               ("C-c C-q" . counsel-org-tag))))
 
-  (setq org-directory "~/.life-in-plain-text/src/")
-  (setq org-return-follows-link t)
+(setq org-directory "~/.life-in-plain-text/src/")
+(setq org-return-follows-link t)
+(setq org-insert-heading-respect-content nil)
 
   (defun pc/html2org-clipboard ()
     "Convert clipboard contents from HTML to Org and then paste (yank)."
