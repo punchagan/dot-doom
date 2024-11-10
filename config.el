@@ -500,17 +500,6 @@
 
   (use-package! markdown-toc :defer t)
 
-  ;; Copied from newer org-mode since ox-hugo needs it
-
-  (defun org-back-to-heading-or-point-min (&optional invisible-ok)
-    "Go back to heading or first point in buffer.
-  If point is before first heading go to first point in buffer
-  instead of back to heading."
-    (condition-case nil
-        (outline-back-to-heading invisible-ok)
-      (error
-       (goto-char (point-min)))))
-
   (defun org-hugo-new-subtree-post-capture-template ()
     "Returns `org-capture' template string for new Hugo post."
     (let* ((date (format-time-string (org-time-stamp-format :long :inactive) (org-current-time)))
