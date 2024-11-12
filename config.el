@@ -526,6 +526,16 @@
                  (function org-hugo-new-subtree-post-capture-template)
                  :prepend t))
 
+(defun pc/set-export-file-name-from-heading ()
+  "Set EXPORT_FILE_NAME to org-hugo-slug of the current heading title."
+  (interactive)
+  (let ((heading (org-get-heading t t t t))) ; Get the heading title with `TODO`, priority, and tags stripped
+    (if heading
+        (let ((slug (org-hugo-slug heading)))
+          (org-set-property "EXPORT_FILE_NAME" slug)
+          (message "EXPORT_FILE_NAME set to '%s'" slug))
+      (message "No heading found at point."))))
+
   (org-link-set-parameters "hugo" :export #'pc/org-hugo-link-export-to-md "Export Hugo blog link to markdown file" )
 
   (defun pc/org-hugo-link-export-to-md (path desc backend &optional info)
