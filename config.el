@@ -548,30 +548,34 @@
         (error "Cannot export Hugo link to non-Hugo backend")))
      (t (error "Cannot export Hugo link to non-Hugo backend"))))
 
-  (defun pc/insert-hugo-cross-link ()
-    "Insert a link with the 'hugo:' protocol.
+(defun pc/insert-hugo-cross-link ()
+  "Insert a link with the 'hugo:' protocol.
 
-  The link completion will include all headlines with an
-  EXPORT_FILE_NAME tag."
-    (interactive)
-    (let* ((headline-links
-            (save-restriction
-              (widen)
-              (seq-filter
-               #'identity
-               (org-element-map (org-element-parse-buffer 'headline) 'headline
-                 (lambda (hl)
-                   (let ((export-file-name (org-element-property :EXPORT_FILE_NAME hl))
-                         (headline-text (org-element-property :raw-value hl)))
-                     (when export-file-name
-                       (cons (format "%s (%s)" headline-text export-file-name)
-                             (concat "hugo:" export-file-name)))))))))
-           ;; Prompt the user to select a link
-           (selected-link (completing-read "Select link: " (mapcar 'car headline-links))))
-      (when selected-link
-        (let ((link (cdr (assoc selected-link headline-links)))
-              (description (read-string "Description: ")))
-          (insert (format "[[%s][%s]]" link description))))))
+The link completion will include all headlines with an
+EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
+  (interactive)
+  (let* ((headline-links
+          (save-restriction
+            (widen)
+            (seq-filter
+             #'identity
+             (org-element-map (org-element-parse-buffer 'headline) 'headline
+               (lambda (hl)
+                 (let ((export-file-name (org-element-property :EXPORT_FILE_NAME hl))
+                       (headline-text (org-element-property :raw-value hl)))
+                   (when export-file-name
+                     (cons (format "%s (%s)" headline-text export-file-name)
+                           (concat "hugo:" export-file-name)))))))))
+         ;; Prompt the user to select a link
+         (selected-link (completing-read "Select link: " (mapcar 'car headline-links))))
+    (when selected-link
+      (let ((link (cdr (assoc selected-link headline-links)))
+            (description (if (use-region-p)
+                             (buffer-substring-no-properties (region-beginning) (region-end))
+                           (read-string "Description: "))))
+        (if (use-region-p)
+            (delete-region (region-beginning) (region-end)))
+        (insert (format "[[%s][%s]]" link description))))))
 
   (defun pc/org-refile-subtree-to-journal ()
     "Refile a subtree to a journal.org datetree corresponding to it's timestamp."
