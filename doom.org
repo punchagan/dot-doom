@@ -419,7 +419,7 @@ here as-is for now, as it is quite well structured and clear.
          ;;emms
          everywhere        ; *leave* Emacs!? You must be joking
          ;;irc               ; how neckbeards socialize
-         ;;(rss +org)        ; emacs as an RSS reader
+         (rss +org)        ; emacs as an RSS reader
          ;;twitter           ; twitter client https://twitter.com/vnought
 
          :config
@@ -1244,7 +1244,13 @@ Refile all the entries in Inbox.org
   :custom
   (okra-tarides-admin-repo "~/code/segfault/admin"))
 #+end_src
-
+** Elfeed Org
+#+begin_src emacs-lisp
+(use-package! elfeed-goodies
+  :bind
+  (:map elfeed-show-mode-map
+        ("q" . elfeed-goodies/delete-pane)))
+#+end_src
 * COMMENT Local Variables
 # Local Variables:
 # eval: (add-hook 'after-save-hook 'pc/tangle-doom-org nil 'local-to-this-file-please)

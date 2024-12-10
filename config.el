@@ -620,3 +620,8 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
 (use-package! okra
   :custom
   (okra-tarides-admin-repo "~/code/segfault/admin"))
+
+(use-package! elfeed-goodies
+  :bind
+  (:map elfeed-show-mode-map
+        ("q" . elfeed-goodies/delete-pane)))
