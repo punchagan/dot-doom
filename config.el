@@ -472,6 +472,8 @@
   (add-hook 'org-clock-cancel-hook #'pc/current-task-to-status)
   (add-hook 'org-clock-goto-hook #'pc/current-task-to-status)
 
+(use-package! zulip-helpers)
+
   (defun pc/zulip-to-org (begin end)
     (interactive "r")
     (when (use-region-p)

@@ -1032,6 +1032,10 @@ Quickly create a summary of headlines tagged with specific tag
             :recipe (:local-repo "~/code/my-repos/zulip-helpers.el"))
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package! zulip-helpers)
+#+end_src
+
 *** Convert markdown from Zulip (or Slack or GitHub) to org
 #+begin_src emacs-lisp
   (defun pc/zulip-to-org (begin end)
