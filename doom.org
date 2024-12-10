@@ -1134,17 +1134,17 @@ This is the code to process ~hugo:~ protocol links when exporting using
 ~ox-hugo~.
 
 #+begin_src emacs-lisp
-  (org-link-set-parameters "hugo" :export #'pc/org-hugo-link-export-to-md "Export Hugo blog link to markdown file" )
+(org-link-set-parameters "hugo" :export #'pc/org-hugo-link-export-to-md)
 
-  (defun pc/org-hugo-link-export-to-md (path desc backend &optional info)
-    "Export a link to a Hugo blog link in markdown format."
-    (message (format "path: %s, desc: %s, backend: %s" path desc backend))
-    (cond
-     ((eq backend 'md)
-      (if (equal org-export-current-backend 'hugo)
-          (format "[%s]({{< relref \"%s\" >}})" desc path)
-        (error "Cannot export Hugo link to non-Hugo backend")))
-     (t (error "Cannot export Hugo link to non-Hugo backend"))))
+(defun pc/org-hugo-link-export-to-md (path desc backend &optional info)
+  "Export a link to a Hugo blog link in markdown format."
+  (message (format "path: %s, desc: %s, backend: %s" path desc backend))
+  (cond
+   ((eq backend 'md)
+    (if (equal org-export-current-backend 'hugo)
+        (format "[%s]({{< relref \"%s\" >}})" desc path)
+      (error "Cannot export Hugo link to non-Hugo backend")))
+   (t (error "Cannot export Hugo link to non-Hugo backend"))))
 #+end_src
 
 **** Helper to insert cross-links
