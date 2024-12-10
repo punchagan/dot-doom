@@ -496,6 +496,8 @@
   (require 'ob-emacs-lisp)
   (require 'ob-python)
 
+(use-package! ox-gist)
+
   (use-package! markdown-mode :defer t)
 
   (use-package! markdown-toc :defer t)

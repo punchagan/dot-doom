@@ -1076,6 +1076,9 @@ Template expansion!
   (package! ox-gist
             :recipe (:local-repo "~/code/my-repos/ox-gist"))
 #+end_src
+#+begin_src emacs-lisp
+(use-package! ox-gist)
+#+end_src
 ** Markdown
 #+BEGIN_SRC emacs-lisp
   (use-package! markdown-mode :defer t)
