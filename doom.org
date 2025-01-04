@@ -1255,6 +1255,10 @@ Refile all the entries in Inbox.org
   (:map elfeed-show-mode-map
         ("q" . elfeed-goodies/delete-pane)))
 #+end_src
+** Org Contacts and Howdy
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.org\\.txt\\'" . org-mode))
+#+end_src
 * COMMENT Local Variables
 # Local Variables:
 # eval: (add-hook 'after-save-hook 'pc/tangle-doom-org nil 'local-to-this-file-please)

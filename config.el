@@ -627,3 +627,5 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
   :bind
   (:map elfeed-show-mode-map
         ("q" . elfeed-goodies/delete-pane)))
+
+(add-to-list 'auto-mode-alist '("\\.org\\.txt\\'" . org-mode))
