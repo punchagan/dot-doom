@@ -1075,6 +1075,11 @@ Template expansion!
 #+begin_src emacs-lisp :tangle packages.el
   (package! ox-reveal)
 #+end_src
+
+#+begin_src emacs-lisp
+(use-package! ox-reveal
+  :after org)
+#+end_src
 ** Org subtree to gist
 #+begin_src emacs-lisp :tangle packages.el
   (package! ox-gist
