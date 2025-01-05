@@ -376,39 +376,39 @@
                  (file+olp+datetree "journal.org")
                  "* %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"))
 
-  (defun pc/journal (&optional mode)
-    "Open a new frame for journaling.
+(defun pc/journal (&optional mode)
+  "Open a new frame for journaling.
 
   If MODE is 'journal opens to the current day in the journal, and
   creates a new day entry if not already present.
 
   If MODE is 'clock jumps to the currently clocked entry, or prompt
   one from the last few."
-    (interactive)
-    (pc/select-window-by-name "What are you doing?")
-    ;; Display agenda...
-    (org-agenda nil "a")
-    (org-super-agenda-mode t)
-    (org-agenda-log-mode t)
-    (org-agenda-day-view)
-    (org-agenda-goto-today)
-    (delete-other-windows)
-    (split-window-right)
-    ;; Perform next action based on mode
-    (cond
-     ;; Show a capture buffer for a new journal entry
-     ((equal mode 'journal)
-      (org-capture nil "j"))
-     ;; Show the current clock entry, if there's one. Otherwise prompt!
-     ((equal mode 'clock)
-      (org-clock-goto (not (org-clocking-p)))
-      (org-narrow-to-subtree)
-      (outline-show-subtree)
-      (goto-char (buffer-end 1)))
-     ;; Show today in the journal
-     (t
-      (org-capture-goto-target "j")
-      (org-narrow-to-subtree))))
+  (interactive)
+  (pc/select-window-by-name "What are you doing?")
+  ;; Display agenda...
+  (org-agenda nil "a")
+  (org-super-agenda-mode t)
+  (org-agenda-log-mode t)
+  (org-agenda-day-view)
+  (org-agenda-goto-today)
+  (delete-other-windows)
+  (split-window-right)
+  ;; Perform next action based on mode
+  (cond
+   ;; Show a capture buffer for a new journal entry
+   ((equal mode 'journal)
+    (org-capture nil "j"))
+   ;; Show the current clock entry, if there's one. Otherwise prompt!
+   ((equal mode 'clock)
+    (org-clock-goto (not (org-clocking-p)))
+    (org-narrow-to-subtree)
+    (outline-show-subtree)
+    (goto-char (buffer-end 1)))
+   ;; Show today in the journal
+   (t
+    (org-capture-goto-target "j")
+    (org-narrow-to-subtree))))
 
   (defun pc/get-frame-by-name (title)
     "Return frame with the given TITLE.
