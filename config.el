@@ -387,11 +387,10 @@
   (interactive)
   (pc/select-window-by-name "What are you doing?")
   ;; Display agenda...
-  (org-agenda nil "a")
-  (org-super-agenda-mode t)
-  (org-agenda-log-mode t)
-  (org-agenda-day-view)
-  (org-agenda-goto-today)
+  (let ((org-agenda-span 'day))
+    (org-agenda nil "a")
+    (org-agenda-log-mode t)
+    (org-agenda-goto-today))
   (delete-other-windows)
   (split-window-right)
   ;; Perform next action based on mode
