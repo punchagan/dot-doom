@@ -1261,9 +1261,27 @@ Refile all the entries in Inbox.org
         ("q" . elfeed-goodies/delete-pane)))
 #+end_src
 ** Org Contacts and Howdy
+*** Use .org.txt as org-mode file
 #+begin_src emacs-lisp
 (add-to-list 'auto-mode-alist '("\\.org\\.txt\\'" . org-mode))
 #+end_src
+*** Set contacts-file
+#+begin_src emacs-lisp
+(after! org
+  (setq org-contacts-files
+        `(,(expand-file-name "contacts.org.txt" org-directory))))
+#+end_src
+*** Configure Howdy
+#+begin_src emacs-lisp :tangle packages.el
+(package! howdy
+  :recipe (:local-repo "~/code/my-repos/howdy"))
+#+end_src
+
+#+begin_src emacs-lisp
+(after! org-contacts
+  (require 'howdy))
+#+end_src
+
 * COMMENT Local Variables
 # Local Variables:
 # eval: (add-hook 'after-save-hook 'pc/tangle-doom-org nil 'local-to-this-file-please)

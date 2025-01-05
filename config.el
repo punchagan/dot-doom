@@ -632,3 +632,10 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
         ("q" . elfeed-goodies/delete-pane)))
 
 (add-to-list 'auto-mode-alist '("\\.org\\.txt\\'" . org-mode))
+
+(after! org
+  (setq org-contacts-files
+        `(,(expand-file-name "contacts.org.txt" org-directory))))
+
+(after! org-contacts
+  (require 'howdy))
