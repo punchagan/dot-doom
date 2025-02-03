@@ -223,7 +223,7 @@
 
   (use-package! magit
     :bind
-    ("C-x g" . magit-status)
+    ("C-x g" . magit-status-here)
     ("C-c b" . magit-blame)
     :custom
     ;; Show word diffs for current hunk
