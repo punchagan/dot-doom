@@ -636,5 +636,11 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
   (setq org-contacts-files
         `(,(expand-file-name "contacts.org.txt" org-directory))))
 
-(after! org-contacts
-  (require 'howdy))
+(use-package! howdy
+  :custom
+  (howdy-max-contacts 0)
+  :bind
+  (:map org-agenda-mode-map
+        ("C-c H" . howdy-agenda-contacted)
+        ("C-c U" . howdy-agenda-untrack-contact)))
+

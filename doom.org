@@ -1289,8 +1289,15 @@ Refile all the entries in Inbox.org
 #+end_src
 
 #+begin_src emacs-lisp
-(after! org-contacts
-  (require 'howdy))
+(use-package! howdy
+  :custom
+  (howdy-max-contacts 0)
+  :bind
+  (:map org-agenda-mode-map
+        ("C-c H" . howdy-agenda-contacted)
+        ("C-c U" . howdy-agenda-untrack-contact)))
+#+end_src
+
 #+end_src
 
 * COMMENT Local Variables
