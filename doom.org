@@ -1258,13 +1258,19 @@ Refile all the entries in Inbox.org
   :custom
   (okra-tarides-admin-repo "~/code/segfault/admin"))
 #+end_src
-** Elfeed Org
+** Elfeed +Org +Goodies +Web
 #+begin_src emacs-lisp
 (use-package! elfeed-goodies
   :bind
   (:map elfeed-show-mode-map
         ("q" . elfeed-goodies/delete-pane)))
 #+end_src
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! elfeed-web
+  :recipe (:local-repo "~/code/my-repos/elfeed" :files ("web/*")))
+#+end_src
+
 ** Org Contacts and Howdy
 *** Use .org.txt as org-mode file
 #+begin_src emacs-lisp

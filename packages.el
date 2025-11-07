@@ -91,5 +91,8 @@
 (package! okra
   :recipe (:local-repo "~/code/segfault/okra/emacs"))
 
+(package! elfeed-web
+  :recipe (:local-repo "~/code/my-repos/elfeed" :files ("web/*")))
+
 (package! howdy
   :recipe (:local-repo "~/code/my-repos/howdy"))
