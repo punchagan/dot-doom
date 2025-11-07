@@ -1298,6 +1298,12 @@ Refile all the entries in Inbox.org
         ("C-c U" . howdy-agenda-untrack-contact)))
 #+end_src
 
+** h2o - Elisp headers to Org
+#+begin_src emacs-lisp :tangle packages.el
+(package! h2o
+  :recipe (:local-repo "~/code/my-repos/h2o"))
+#+end_src
+
 #+end_src
 
 * COMMENT Local Variables

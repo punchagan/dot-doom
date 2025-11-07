@@ -96,3 +96,7 @@
 
 (package! howdy
   :recipe (:local-repo "~/code/my-repos/howdy"))
+
+(package! h2o
+  :recipe (:local-repo "~/code/my-repos/h2o"))
+
