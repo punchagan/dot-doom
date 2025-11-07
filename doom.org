@@ -835,6 +835,10 @@ Ocaml LSP can't do everything that merlin does, yet!
               ("C-TAB" . 'copilot-accept-completion-by-word)
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
 #+end_src
+** JSONnet mode
+#+begin_src emacs-lisp :tangle packages.el
+  (package! jsonnet-mode)
+#+end_src
 * Prose and Literate Programming
 ** Org mode
 Some basic org-mode configuration
