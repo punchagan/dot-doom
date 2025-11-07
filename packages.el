@@ -100,3 +100,7 @@
 (package! h2o
   :recipe (:local-repo "~/code/my-repos/h2o"))
 
+(package! org-social
+  :recipe (:host github
+           :repo "tanrax/org-social.el"
+           :branch "develop"))

@@ -644,3 +644,15 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
         ("C-c H" . howdy-agenda-contacted)
         ("C-c U" . howdy-agenda-untrack-contact)))
 
+(use-package! org-social
+  :after org
+  :custom
+  ;; Required: Set the path to your social feed file
+  (org-social-file (expand-file-name "social.org" org-directory))
+
+  ;; Required: Configure Org Social Relay server
+  ;; See public relay list: https://github.com/tanrax/org-social/blob/main/org-social-relay-list.txt
+  (org-social-relay "https://org-social-relay.andros.dev/")
+
+  ;; Required: Set your public social.org URL (where others can access your feed)
+  (org-social-my-public-url "https://muse-amuse.in/~punchagan/social.org"))

@@ -1304,6 +1304,28 @@ Refile all the entries in Inbox.org
   :recipe (:local-repo "~/code/my-repos/h2o"))
 #+end_src
 
+** Org Social
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! org-social
+  :recipe (:host github
+           :repo "tanrax/org-social.el"
+           :branch "develop"))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! org-social
+  :after org
+  :custom
+  ;; Required: Set the path to your social feed file
+  (org-social-file (expand-file-name "social.org" org-directory))
+
+  ;; Required: Configure Org Social Relay server
+  ;; See public relay list: https://github.com/tanrax/org-social/blob/main/org-social-relay-list.txt
+  (org-social-relay "https://org-social-relay.andros.dev/")
+
+  ;; Required: Set your public social.org URL (where others can access your feed)
+  (org-social-my-public-url "https://muse-amuse.in/~punchagan/social.org"))
 #+end_src
 
 * COMMENT Local Variables
