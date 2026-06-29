@@ -74,6 +74,9 @@
 
   (package! jsonnet-mode)
 
+(package! okra
+  :recipe (:local-repo "~/code/segfault/okra/emacs"))
+
 (package! org-super-agenda)
 
   (package! ox-gfm)
@@ -87,9 +90,6 @@
             :recipe (:local-repo "~/code/my-repos/ox-gist"))
 
 (package! org-bookmark-heading)
-
-(package! okra
-  :recipe (:local-repo "~/code/segfault/okra/emacs"))
 
 (package! elfeed-web
   :recipe (:host github :repo "emacs-elfeed/elfeed-web"))

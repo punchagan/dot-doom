@@ -320,6 +320,12 @@
               ("C-TAB" . 'copilot-accept-completion-by-word)
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
 
+(use-package! okra
+  :custom
+  (okra-tarides-admin-repo "~/code/segfault/admin")
+  (okra-username "punchagan")
+  (okra-team-members '("Alizter" "ElectreAAS" "art-w" "Leonidas-from-XIV" "punchagan" "shonfeder" "Sudha247")))
+
 (use-package! org
   :bind (("C-c c" . org-capture)
          (:map org-mode-map
@@ -629,10 +635,6 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
 
 (after! org
   (require 'org-bookmark-heading))
-
-(use-package! okra
-  :custom
-  (okra-tarides-admin-repo "~/code/segfault/admin"))
 
 (use-package! elfeed-web)
 

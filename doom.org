@@ -839,6 +839,21 @@ Ocaml LSP can't do everything that merlin does, yet!
 #+begin_src emacs-lisp :tangle packages.el
   (package! jsonnet-mode)
 #+end_src
+
+** Tarides weeklies
+#+begin_src emacs-lisp :tangle packages.el
+(package! okra
+  :recipe (:local-repo "~/code/segfault/okra/emacs"))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! okra
+  :custom
+  (okra-tarides-admin-repo "~/code/segfault/admin")
+  (okra-username "punchagan")
+  (okra-team-members '("Alizter" "ElectreAAS" "art-w" "Leonidas-from-XIV" "punchagan" "shonfeder" "Sudha247")))
+#+end_src
+
 * Prose and Literate Programming
 ** Org mode
 Some basic org-mode configuration
@@ -1255,17 +1270,6 @@ Refile all the entries in Inbox.org
 #+begin_src emacs-lisp
 (after! org
   (require 'org-bookmark-heading))
-#+end_src
-** Tarides weeklies
-#+begin_src emacs-lisp :tangle packages.el
-(package! okra
-  :recipe (:local-repo "~/code/segfault/okra/emacs"))
-#+end_src
-
-#+begin_src emacs-lisp
-(use-package! okra
-  :custom
-  (okra-tarides-admin-repo "~/code/segfault/admin"))
 #+end_src
 ** Elfeed +Org +Goodies +Web
 #+begin_src emacs-lisp :tangle packages.el
