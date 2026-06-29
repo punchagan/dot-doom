@@ -76,7 +76,7 @@
   ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
   ;; they are implemented.
 
-  (defun pc/tangle-doom-org ()
+  (defun pc/tangle-doom-org (&optional arg)
     "Tangle the file to update doom config files."
     (interactive "P")
     (let* ((time (current-time))

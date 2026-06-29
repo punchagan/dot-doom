@@ -227,7 +227,7 @@ prefix argument, though. ~C-u C-x C-s~.
 
 #+name: tangle-file-generation
 #+begin_src emacs-lisp
-  (defun pc/tangle-doom-org ()
+  (defun pc/tangle-doom-org (&optional arg)
     "Tangle the file to update doom config files."
     (interactive "P")
     (let* ((time (current-time))
@@ -1437,5 +1437,5 @@ Refile all the entries in Inbox.org
 
 * COMMENT Local Variables
 # Local Variables:
-# eval: (add-hook 'after-save-hook 'pc/tangle-doom-org nil 'local-to-this-file-please)
+# eval: (add-hook 'after-save-hook #'pc/tangle-doom-org nil 'local-to-this-file-please)
 # End:
