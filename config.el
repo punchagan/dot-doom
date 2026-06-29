@@ -506,31 +506,30 @@
 
   (use-package! markdown-toc :defer t)
 
-  (defun org-hugo-new-subtree-post-capture-template ()
-    "Returns `org-capture' template string for new Hugo post."
-    (let* ((date (format-time-string (org-time-stamp-format :long :inactive) (org-current-time)))
-           (title (read-from-minibuffer "Post Title: ")) ;Prompt to enter the post title
-           (fname (org-hugo-slug title)))
-      (mapconcat #'identity
-                 `(
-                   ,(concat "* DRAFT " title " :noexport:")
-                   ":PROPERTIES:"
-                   ,(concat ":EXPORT_FILE_NAME: " fname)
-                   ,(concat ":EXPORT_DATE: " date) ;Enter current date and time
-                   ":EXPORT_DESCRIPTION:"
-                   ":EXPORT_HUGO_CUSTOM_FRONT_MATTER:"
-                   ":EXPORT_HUGO_SECTION: drafts"
-                   ":END:"
-                   "%?\n")          ;Place the cursor here finally
-                 "\n")))
+(defun org-hugo-new-subtree-post-capture-template ()
+  "Returns `org-capture' template string for new Hugo post."
+  (let* ((date (format-time-string (org-time-stamp-format :long :inactive) (org-current-time)))
+         (title (read-from-minibuffer "Post Title: ")) ;Prompt to enter the post title
+         (fname (org-hugo-slug title)))
+    (mapconcat #'identity
+               `(
+                 ,(concat "* DRAFT " title " :noexport:")
+                 ":PROPERTIES:"
+                 ,(concat ":EXPORT_FILE_NAME: " fname)
+                 ,(concat ":EXPORT_DATE: " date) ;Enter current date and time
+                 ":EXPORT_DESCRIPTION:"
+                 ":EXPORT_HUGO_CUSTOM_FRONT_MATTER:"
+                 ":END:"
+                 "%?\n")          ;Place the cursor here finally
+               "\n")))
 
-  (add-to-list 'org-capture-templates
-               '("b"
-                 "Blog post for punchagan.muse-amuse.in"
-                 entry
-                 (file "blog-posts.org")
-                 (function org-hugo-new-subtree-post-capture-template)
-                 :prepend t))
+(add-to-list 'org-capture-templates
+             '("b"
+               "Blog post for punchagan.muse-amuse.in"
+               entry
+               (file "draft-blog-posts.org")
+               (function org-hugo-new-subtree-post-capture-template)
+               :prepend t))
 
 (defun pc/set-export-file-name-from-heading ()
   "Set EXPORT_FILE_NAME to org-hugo-slug of the current heading title."
@@ -554,24 +553,34 @@
       (error "Cannot export Hugo link to non-Hugo backend")))
    (t (error "Cannot export Hugo link to non-Hugo backend"))))
 
+(defun pc/get-blog-headline-links (filename)
+  "Return a list of cons cells of headline text and EXPORT_FILE_NAME links in FILENAME."
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (save-restriction
+      (widen)
+      (seq-filter
+       #'identity
+       (org-element-map (org-element-parse-buffer 'headline) 'headline
+         (lambda (hl)
+           (let ((export-file-name (org-element-property :EXPORT_FILE_NAME hl))
+                 (headline-text (org-element-property :raw-value hl)))
+             (when export-file-name
+               (cons (format "%s (%s)" headline-text export-file-name)
+                     (concat "hugo:" export-file-name))))))))))
+
 (defun pc/insert-hugo-cross-link ()
   "Insert a link with the 'hugo:' protocol.
 
 The link completion will include all headlines with an
 EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
   (interactive)
-  (let* ((headline-links
-          (save-restriction
-            (widen)
-            (seq-filter
-             #'identity
-             (org-element-map (org-element-parse-buffer 'headline) 'headline
-               (lambda (hl)
-                 (let ((export-file-name (org-element-property :EXPORT_FILE_NAME hl))
-                       (headline-text (org-element-property :raw-value hl)))
-                   (when export-file-name
-                     (cons (format "%s (%s)" headline-text export-file-name)
-                           (concat "hugo:" export-file-name)))))))))
+  (let* ((blog-files
+          (mapcar
+           (lambda (x) (expand-file-name x org-directory))
+           '("draft-blog-posts.org" "blog-posts.org")))
+         (headline-links
+          (apply 'append (mapcar 'pc/get-blog-headline-links blog-files)))
          ;; Prompt the user to select a link
          (selected-link (completing-read "Select link: " (mapcar 'car headline-links))))
     (when selected-link
@@ -625,10 +634,45 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
   :custom
   (okra-tarides-admin-repo "~/code/segfault/admin"))
 
+(use-package! elfeed-web)
+
 (use-package! elfeed-goodies
   :bind
   (:map elfeed-show-mode-map
         ("q" . elfeed-goodies/delete-pane)))
+
+(defun pc/set-elfeed-feeds ()
+  "Set elfeed-feeds from the org file."
+  (interactive)
+  (rmh-elfeed-org-process rmh-elfeed-org-files rmh-elfeed-org-tree-id))
+
+(defvar pc/elfeed-db-save-timer nil
+  "Timer for debounced elfeed database saves.")
+
+(defun pc/elfeed-db-save-and-backup ()
+  "Save the elfeed database and commit to git."
+  (when (and (boundp 'elfeed-db) elfeed-db)
+    (elfeed-db-save)
+    (let ((default-directory elfeed-db-directory))
+      (when (file-exists-p ".git")
+        (call-process "git" nil "*elfeed-db-backup*" nil "add" "-A")
+        (call-process "git" nil "*elfeed-db-backup*" nil "commit" "-m" "auto-backup")
+        (call-process "git" nil "*elfeed-db-backup*" nil "push" "origin" "main")))))
+
+(defun pc/elfeed-db-save-soon ()
+  "Schedule a database save after 10 seconds of idle."
+  (interactive)
+  (when pc/elfeed-db-save-timer
+    (cancel-timer pc/elfeed-db-save-timer))
+  (setq pc/elfeed-db-save-timer
+        (run-with-idle-timer 10 nil #'pc/elfeed-db-save-and-backup)))
+
+;; Save and backup when tags change (covers elfeed-web usage)
+(add-hook 'elfeed-tag-hooks   (lambda (&rest _) (pc/elfeed-db-save-soon)))
+(add-hook 'elfeed-untag-hooks (lambda (&rest _) (pc/elfeed-db-save-soon)))
+
+;; Save and backup when new entries are added
+(add-hook 'elfeed-db-update-hook #'pc/elfeed-db-save-soon)
 
 (add-to-list 'auto-mode-alist '("\\.org\\.txt\\'" . org-mode))
 
