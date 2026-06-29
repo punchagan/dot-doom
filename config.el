@@ -709,3 +709,29 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
 
   ;; Required: Set your public social.org URL (where others can access your feed)
   (org-social-my-public-url "https://muse-amuse.in/~punchagan/social.org"))
+
+(use-package! org-novelist
+  :custom
+    (org-novelist-author "Puneeth Chaganti")  ; The default author name to use when exporting a story. Each story can also override this setting
+    (org-novelist-author-email "punchagan@muse-amuse.in")  ; The default author contact email to use when exporting a story. Each story can also override this setting
+    (org-novelist-automatic-referencing-p nil)  ; Set this variable to 't' if you want Org Novelist to always keep note links up to date. This may slow down some systems when operating on complex stories. It defaults to 'nil' when not set
+  :bind (("C-c n n s" . org-novelist-new-story)
+          :map org-novelist-mode-map
+          ("C-c n n c" . org-novelist-new-chapter)
+          ("C-c n d c" . org-novelist-destroy-chapter)
+          ("C-c n r c" . org-novelist-rename-chapter)
+          ("C-c n n a" . org-novelist-new-character)
+          ("C-c n d a" . org-novelist-destroy-character)
+          ("C-c n r a" . org-novelist-rename-character)
+          ("C-c n n p" . org-novelist-new-prop)
+          ("C-c n d p" . org-novelist-destroy-prop)
+          ("C-c n r p" . org-novelist-rename-prop)
+          ("C-c n n l" . org-novelist-new-place)
+          ("C-c n d l" . org-novelist-destroy-place)
+          ("C-c n r l" . org-novelist-rename-place)
+          ("C-c n u"   . org-novelist-update-references)
+          ("C-c n r s" . org-novelist-rename-story)
+          ("C-c n e"   . org-novelist-export-story)
+          ("C-c n l l" . org-novelist-link-to-story)
+          ("C-c n l u" . org-novelist-unlink-from-story)
+          ("C-c n t"   . org-novelist-toggle-automatic-referencing)))

@@ -106,3 +106,6 @@
   :recipe (:host github
            :repo "tanrax/org-social.el"
            :branch "develop"))
+
+(package! org-novelist
+  :recipe (:host github :repo "sympodius/org-novelist" :branch "development" :files ("*.el")))
