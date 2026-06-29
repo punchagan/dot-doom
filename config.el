@@ -252,6 +252,8 @@
     :config
     (setq magit-todos-exclude-globs '("*.css.map")))
 
+(which-function-mode)
+
   (use-package! projectile
     :custom
     (projectile-project-search-path `((,pc/code-directory . 4)))

@@ -718,6 +718,12 @@ Get links/browse the file/commit on GitHub.
 (package! git-link)
 #+end_src
 
+** Global modes for programming
+*** Enable which-function-mode
+#+begin_src emacs-lisp
+(which-function-mode)
+#+end_src
+
 ** Project management
 *** Setup projectile
 #+begin_src emacs-lisp
