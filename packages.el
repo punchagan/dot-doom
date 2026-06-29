@@ -63,6 +63,8 @@
 
   (package! package-lint)
 
+(package! ocaml-eglot)
+
 (package! reason-mode)
 
 (package! dune-format)

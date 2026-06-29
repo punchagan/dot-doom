@@ -782,6 +782,20 @@ Get links/browse the file/commit on GitHub.
   (package! package-lint)
 #+end_src
 ** Reason & OCaml
+*** ocaml-eglot
+#+begin_src emacs-lisp :tangle packages.el
+(package! ocaml-eglot)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! ocaml-eglot
+  :ensure t
+  :after tuareg
+  :hook
+  (tuareg-mode . ocaml-eglot)
+  (ocaml-eglot . eglot-ensure))
+#+end_src
+
 *** Reason
 #+begin_src emacs-lisp :tangle packages.el
 (package! reason-mode)

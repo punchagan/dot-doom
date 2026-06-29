@@ -294,6 +294,13 @@
   (use-package! typescript-mode
     :defer t)
 
+(use-package! ocaml-eglot
+  :ensure t
+  :after tuareg
+  :hook
+  (tuareg-mode . ocaml-eglot)
+  (ocaml-eglot . eglot-ensure))
+
 (use-package! reason-mode
   :hook (reason-mode . setup-reason-mode)
 
