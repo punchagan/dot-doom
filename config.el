@@ -388,7 +388,7 @@
                '("j"
                  "Journal"
                  entry
-                 (file+olp+datetree "journal.org")
+                 (file+olp+datetree pc/current-journal-file)
                  "* %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"))
 
 (defun pc/journal (&optional mode)
@@ -500,7 +500,7 @@
      '("p"
        "Protocol"
        entry
-       (file+olp+datetree "journal.org")
+       (file+olp+datetree pc/current-journal-file)
        "* %:description\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%:link\n\n#+begin_quote\n%i\n#+end_quote\n"))
 
   (require 'org-tempo)
@@ -607,19 +607,34 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
             (delete-region (region-beginning) (region-end)))
         (insert (format "[[%s][%s]]" link description))))))
 
-  (defun pc/org-refile-subtree-to-journal ()
-    "Refile a subtree to a journal.org datetree corresponding to it's timestamp."
-    (interactive)
-    (let* ((entry-date (org-entry-get nil "CREATED" t))
-           (org-overriding-default-time
-            (apply #'encode-time (org-parse-time-string entry-date)))
-           (buf (current-buffer)))
-      (when entry-date
+(defun pc/journal-file-for-time (time)
+  "Return the journal file that should hold an entry dated TIME.
+Every year's entries go to their own journal-<year>.org."
+  (expand-file-name
+   (format-time-string "journal-%Y.org" time)
+   org-directory))
+
+(defun pc/current-journal-file ()
+  "Return the journal file for the current year, for use as an
+`org-capture-templates' file target."
+  (pc/journal-file-for-time (current-time)))
+
+(defun pc/org-refile-subtree-to-journal ()
+  "Refile a subtree to the journal datetree matching its CREATED timestamp.
+Entries are filed to journal-<year>.org matching their year."
+  (interactive)
+  (let ((entry-date (org-entry-get nil "CREATED" t)))
+    (when entry-date
+      (let* ((time (apply #'encode-time (org-parse-time-string entry-date)))
+             (journal-file (pc/journal-file-for-time time))
+             (journal-buf (find-file-noselect journal-file)))
         (org-cut-subtree)
         ;; Set the continuation position when this function is called from org-map-entries
         (setq org-map-continue-from (point))
         (save-mark-and-excursion
-          (org-capture-goto-target "j")
+          (set-buffer journal-buf)
+          (org-datetree-find-date-create
+           (calendar-gregorian-from-absolute (time-to-days time)))
           (org-narrow-to-subtree)
           (org-show-subtree)
           (org-end-of-subtree t)
@@ -627,9 +642,7 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
           (goto-char (point-max))
           (org-paste-subtree 4)
           (widen)
-          (save-buffer)
-          (switch-to-buffer buf)
-          (save-buffer)))))
+          (save-buffer))))))
 
   (defun pc/org-refile-inbox ()
     (interactive)
