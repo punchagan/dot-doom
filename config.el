@@ -424,22 +424,22 @@
     (org-capture-goto-target "j")
     (org-narrow-to-subtree))))
 
-  (defun pc/get-frame-by-name (title)
-    "Return frame with the given TITLE.
+(defun pc/get-frame-by-name (title)
+  "Return frame with the given TITLE.
   If no such frame exists, creates a new frame."
-    (or
-     (car (filtered-frame-list
-           (lambda (f)
-             (string= title (cdr (assq 'title (frame-parameters f)))))))
-     (make-frame
-      `((title . ,title)
-        (fullscreen . maximized)))))
+  (or
+   (car (filtered-frame-list
+         (lambda (f)
+           (string= title (cdr (assq 'title (frame-parameters f)))))))
+   (make-frame
+    `((title . ,title)
+      (fullscreen . maximized)))))
 
-  (defun pc/select-window-by-name (title)
-    "Raise the window with the specified TITLE."
-    (let ((frame (pc/get-frame-by-name title)))
-      (select-frame frame)
-      (shell-command (format "wmctrl -R \"%s\"" title))))
+(defun pc/select-window-by-name (title)
+  "Raise the window with the specified TITLE."
+  (let ((frame (pc/get-frame-by-name title)))
+    (select-frame frame)
+    (select-frame-set-input-focus (selected-frame))))
 
   (defun pc/work-today ()
     "Create a journal entry with today's work tasks"
