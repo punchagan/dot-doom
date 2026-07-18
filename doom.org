@@ -386,7 +386,7 @@ here as-is for now, as it is quite well structured and clear.
          ;;nim               ; python + lisp at the speed of c
          ;;nix               ; I hereby declare "nix geht mehr!"
          (ocaml +lsp)               ; an objective camel
-         (org +hugo +noter +contacts)         ; organize your plain life in plain text
+         (org +noter)        ; organize your plain life in plain text
          ;;php               ; perl's insecure younger brother
          ;;plantuml          ; diagrams for confusing people more
          ;;purescript        ; javascript, but functional
@@ -1137,6 +1137,16 @@ Template expansion!
   (use-package! markdown-toc :defer t)
 #+END_SRC
 ** Hugo & Blog setup
+*** Enable org-hugo
+Previously, doom supported a +hugo flag to org. But, it no longer exists.
+#+begin_src emacs-lisp :tangle packages.el
+(package! ox-hugo)
+#+end_src
+#+begin_src emacs-lisp
+(use-package! ox-hugo
+  :after ox)
+#+end_src
+
 *** Capture template
 #+begin_src emacs-lisp
 (defun org-hugo-new-subtree-post-capture-template ()
@@ -1363,6 +1373,16 @@ Refile all the entries in Inbox.org
 #+end_src
 
 ** Org Contacts and Howdy
+*** Setup org-contacts
+Previously, doom supported a +contacts flag to org. But, it no longer exists.
+#+begin_src emacs-lisp :tangle packages.el
+(package! org-contacts)
+#+end_src
+#+begin_src emacs-lisp
+(use-package! org-contacts
+  :after org)
+#+end_src
+
 *** Use .org.txt as org-mode file
 #+begin_src emacs-lisp
 (add-to-list 'auto-mode-alist '("\\.org\\.txt\\'" . org-mode))

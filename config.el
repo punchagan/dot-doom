@@ -521,6 +521,9 @@
 
   (use-package! markdown-toc :defer t)
 
+(use-package! ox-hugo
+  :after ox)
+
 (defun org-hugo-new-subtree-post-capture-template ()
   "Returns `org-capture' template string for new Hugo post."
   (let* ((date (format-time-string (org-time-stamp-format :long :inactive) (org-current-time)))
@@ -697,6 +700,9 @@ Entries are filed to journal-<year>.org matching their year."
 
 ;; Save and backup when new entries are added
 (add-hook 'elfeed-db-update-hook #'pc/elfeed-db-save-soon)
+
+(use-package! org-contacts
+  :after org)
 
 (add-to-list 'auto-mode-alist '("\\.org\\.txt\\'" . org-mode))
 

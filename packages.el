@@ -91,10 +91,14 @@
   (package! ox-gist
             :recipe (:local-repo "~/code/my-repos/ox-gist"))
 
+(package! ox-hugo)
+
 (package! org-bookmark-heading)
 
 (package! elfeed-web
   :recipe (:host github :repo "emacs-elfeed/elfeed-web"))
+
+(package! org-contacts)
 
 (package! howdy
   :recipe (:local-repo "~/code/my-repos/howdy"))
