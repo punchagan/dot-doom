@@ -753,21 +753,11 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
         (insert (format "[[%s][%s]]" link description))))))
 
 (defun pc/entry-date-at-point ()
-  "Return the day number (see `time-to-days') for the entry at point.
-Prefers the :CREATED: property. Falls back to the nearest ancestor
-heading that looks like a datetree day heading (\"YYYY-MM-DD ...\"),
-since journal entries filed under a datetree don't carry their own
-:CREATED: property."
-  (or (let ((created (org-entry-get nil "CREATED" t)))
-        (and created (time-to-days (org-time-string-to-time created))))
-      (save-excursion
-        (let (date)
-          (while (and (not date) (org-up-heading-safe))
-            (let ((heading (org-get-heading t t t t)))
-              (when (string-match "^\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" heading)
-                (setq date (time-to-days
-                            (org-time-string-to-time (match-string 1 heading)))))))
-          date))))
+  "Return the day number (see `time-to-days') for the entry at point,
+from its :CREATED: property. All capture templates are expected to
+set it -- see doom.org for which ones do."
+  (let ((created (org-entry-get nil "CREATED" t)))
+    (and created (time-to-days (org-time-string-to-time created)))))
 
 (defun pc/strip-property-drawer (entry)
   "Return ENTRY (a subtree's text) with its own property drawer, if
@@ -806,10 +796,16 @@ subtrees, into a new draft Hugo post created via the \"b\" capture
 template. Sources are left untouched; entries are copied, not
 refiled.
 
-Interactively prompts for TAG, defaulting the range to the last 7
-days."
+Interactively prompts for TAG, restricted to known tags across
+`org-agenda-files' -- there's nothing to collect for a tag nobody's
+used -- defaulting to \"weekly\", and the date range (defaulting to
+the last 7 days)."
   (interactive
-   (list (read-string "Tag: ")
+   (list (let ((org-last-tags-completion-table
+                (org-global-tags-completion-table (org-agenda-files))))
+           (completing-read "Use entries tagged with: "
+                             org-last-tags-completion-table
+                             nil t nil nil "weekly"))
          (org-read-date nil t nil "Start date"
                          (time-subtract (current-time) (days-to-time 7)))
          (org-read-date nil t nil "End date")))

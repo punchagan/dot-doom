@@ -1490,10 +1490,16 @@ subtrees, into a new draft Hugo post created via the \"b\" capture
 template. Sources are left untouched; entries are copied, not
 refiled.
 
-Interactively prompts for TAG, defaulting the range to the last 7
-days."
+Interactively prompts for TAG, restricted to known tags across
+`org-agenda-files' -- there's nothing to collect for a tag nobody's
+used -- defaulting to \"weekly\", and the date range (defaulting to
+the last 7 days)."
   (interactive
-   (list (read-string "Use entries tagged with: ")
+   (list (let ((org-last-tags-completion-table
+                (org-global-tags-completion-table (org-agenda-files))))
+           (completing-read "Use entries tagged with: "
+                             org-last-tags-completion-table
+                             nil t nil nil "weekly"))
          (org-read-date nil t nil "Start date"
                          (time-subtract (current-time) (days-to-time 7)))
          (org-read-date nil t nil "End date")))
