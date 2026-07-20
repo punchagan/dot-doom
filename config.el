@@ -639,8 +639,9 @@ global-shortcut commands above."
      '("p"
        "Protocol"
        entry
-       (file+olp+datetree pc/current-journal-file)
-       "* %:description\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%:link\n\n#+begin_quote\n%i\n#+end_quote\n"))
+       (file "Inbox.org")
+       "* DRAFT %:description\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%:link\n\n#+begin_quote\n%i\n#+end_quote\n"
+       :prepend t))
 
   (require 'org-tempo)
 
@@ -674,6 +675,7 @@ global-shortcut commands above."
                  ":PROPERTIES:"
                  ,(concat ":EXPORT_FILE_NAME: " fname)
                  ,(concat ":EXPORT_DATE: " date) ;Enter current date and time
+                 ,(concat ":CREATED: " date)
                  ":EXPORT_DESCRIPTION:"
                  ":EXPORT_HUGO_CUSTOM_FRONT_MATTER:"
                  ":END:"

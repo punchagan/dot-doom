@@ -1272,14 +1272,20 @@ Quickly create a summary of headlines tagged with specific tag
   (require 'org-protocol)
 #+END_SRC
 *** Template to capture protocol entries
+
+Browser captures (link + selection) are zero-decision, same as
+drafts -- land in =Inbox.org= as a DRAFT, triaged later, instead of
+going straight into the journal.
+
 #+BEGIN_SRC emacs-lisp
   (add-to-list
      'org-capture-templates
      '("p"
        "Protocol"
        entry
-       (file+olp+datetree pc/current-journal-file)
-       "* %:description\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%:link\n\n#+begin_quote\n%i\n#+end_quote\n"))
+       (file "Inbox.org")
+       "* DRAFT %:description\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%:link\n\n#+begin_quote\n%i\n#+end_quote\n"
+       :prepend t))
 #+END_SRC
 ** Org babel
 Template expansion!
@@ -1344,6 +1350,7 @@ Previously, doom supported a +hugo flag to org. But, it no longer exists.
                  ":PROPERTIES:"
                  ,(concat ":EXPORT_FILE_NAME: " fname)
                  ,(concat ":EXPORT_DATE: " date) ;Enter current date and time
+                 ,(concat ":CREATED: " date)
                  ":EXPORT_DESCRIPTION:"
                  ":EXPORT_HUGO_CUSTOM_FRONT_MATTER:"
                  ":END:"
