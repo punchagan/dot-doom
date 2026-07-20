@@ -1088,8 +1088,11 @@ show up, and refiled into by hand.
 **** Template to capture drafts
 
 Zero-decision capture: no judgment about what this is or where it
-belongs, just get it down. Lands in =Inbox.org= (same file mobile
-captures to). No date needed -- the "Needs review" section of the
+belongs, just get it down. Lands in =Inbox.org= -- the desktop capture
+pen; mobile captures to its own =Mobile.org= instead, to avoid sync
+conflicts. Both get treated identically everywhere else (agenda,
+highlighting, refile) since that's all keyword/date-driven, not
+file-specific. No date needed -- the "Needs review" section of the
 daily driver agenda finds DRAFT entries by keyword, regardless of
 date, until it's dispatched: changing DRAFT to another keyword in
 place, or refiling it elsewhere.
@@ -1541,7 +1544,7 @@ confirming."
     (org-capture-finalize)))
 #+end_src
 
-** Inbox.org (Orgzly) refile
+** Inbox.org / Mobile.org (Orgzly) refile
 *** Refile single subtree
 #+begin_src emacs-lisp
 (defun pc/journal-file-for-time (time)
@@ -1590,7 +1593,7 @@ keyword is stripped first -- journal entries are notes, not tasks."
 #+end_src
 *** Refile Inbox.org
 
-Refile all the entries in Inbox.org
+Refile all the entries in Inbox.org and Mobile.org
 
 #+begin_src emacs-lisp
   (defun pc/org-refile-inbox ()
@@ -1600,7 +1603,9 @@ Refile all the entries in Inbox.org
     (org-map-entries
      #'pc/org-refile-subtree-to-journal
      nil
-     (-filter (lambda (x) (s-contains? "Inbox.org" x)) (org-agenda-files))))
+     (-filter (lambda (x) (or (s-contains? "Inbox.org" x)
+                               (s-contains? "Mobile.org" x)))
+              (org-agenda-files))))
 #+end_src
 ** Org crypt
 #+begin_src emacs-lisp

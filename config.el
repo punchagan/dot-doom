@@ -897,7 +897,9 @@ keyword is stripped first -- journal entries are notes, not tasks."
     (org-map-entries
      #'pc/org-refile-subtree-to-journal
      nil
-     (-filter (lambda (x) (s-contains? "Inbox.org" x)) (org-agenda-files))))
+     (-filter (lambda (x) (or (s-contains? "Inbox.org" x)
+                               (s-contains? "Mobile.org" x)))
+              (org-agenda-files))))
 
 (require 'org-crypt)
 
