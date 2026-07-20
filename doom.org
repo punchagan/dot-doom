@@ -888,6 +888,13 @@ Some basic org-mode configuration
 (setq org-return-follows-link t)
 (setq org-insert-heading-respect-content nil)
 
+;; Journal files stay chronological (new entries at the bottom, matching
+;; the day's narrative order). Everything else gets new items at the
+;; top -- easier to spot what just landed. First matching regexp wins.
+(setq org-reverse-note-order
+      '(("journal-.*\\.org\\'" . nil)
+        (".*" . t)))
+
 ;; The persisted org-element cache can go stale relative to whatever
 ;; org-todo-keywords currently says (e.g. after changing the sequence),
 ;; leaving a cached `:todo-type' out of sync with a heading's actual
