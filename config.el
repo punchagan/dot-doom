@@ -500,38 +500,43 @@
 
   (map! :map org-mode-map "C-c d" #'pc/dispatch-entry)
 
-(defun pc/journal (&optional mode)
-  "Open a new frame for journaling.
-
-  If MODE is 'journal opens to the current day in the journal, and
-  creates a new day entry if not already present.
-
-  If MODE is 'clock jumps to the currently clocked entry, or prompt
-  one from the last few."
+(defun pc/show-agenda ()
+  "Raise the journal frame and show today's agenda."
   (interactive)
   (pc/select-window-by-name "What are you doing?")
-  ;; Display agenda...
+  (delete-other-windows)
   (let ((org-agenda-span 'day))
     (org-agenda nil "a")
-    (org-agenda-log-mode t)
-    (org-agenda-goto-today))
+    (org-agenda-goto-today)))
+
+(defun pc/capture-draft ()
+  "Raise the journal frame and capture a quick, zero-decision draft.
+Categorize it later via the \"Needs review\" agenda group or
+`pc/dispatch-entry' (C-c d)."
+  (interactive)
+  (pc/select-window-by-name "What are you doing?")
   (delete-other-windows)
-  (split-window-right)
-  ;; Perform next action based on mode
-  (cond
-   ;; Show a capture buffer for a new journal entry
-   ((equal mode 'journal)
-    (org-capture nil "j"))
-   ;; Show the current clock entry, if there's one. Otherwise prompt!
-   ((equal mode 'clock)
-    (org-clock-goto (not (org-clocking-p)))
-    (org-narrow-to-subtree)
-    (outline-show-subtree)
-    (goto-char (buffer-end 1)))
-   ;; Show today in the journal
-   (t
-    (org-capture-goto-target "j")
-    (org-narrow-to-subtree))))
+  (org-capture nil "d"))
+
+(defun pc/goto-clock ()
+  "Raise the journal frame and jump to the current clocked entry.
+Prompts for one from the last few if nothing is currently clocked."
+  (interactive)
+  (pc/select-window-by-name "What are you doing?")
+  (delete-other-windows)
+  (org-clock-goto (not (org-clocking-p)))
+  (org-narrow-to-subtree)
+  (outline-show-subtree)
+  (goto-char (buffer-end 1)))
+
+(defun pc/goto-today-journal ()
+  "Raise the journal frame and narrow to today's journal entry.
+Internal helper, used by `pc/work-today' -- not one of the three
+global-shortcut commands above."
+  (pc/select-window-by-name "What are you doing?")
+  (delete-other-windows)
+  (org-capture-goto-target "j")
+  (org-narrow-to-subtree))
 
 (defun pc/get-frame-by-name (title)
   "Return frame with the given TITLE.
@@ -571,7 +576,7 @@
 
       (when (org-clocking-p)
         (org-clock-out))
-      (pc/journal)
+      (pc/goto-today-journal)
       (end-of-buffer)
       (org-insert-heading-after-current)
       (insert title)
