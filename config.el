@@ -813,10 +813,12 @@ Every year's entries go to their own journal-<year>.org."
 
 (defun pc/org-refile-subtree-to-journal ()
   "Refile a subtree to the journal datetree matching its CREATED timestamp.
-Entries are filed to journal-<year>.org matching their year."
+Entries are filed to journal-<year>.org matching their year. Any TODO
+keyword is stripped first -- journal entries are notes, not tasks."
   (interactive)
   (let ((entry-date (org-entry-get nil "CREATED" t)))
     (when entry-date
+      (org-todo "")
       (let* ((time (apply #'encode-time (org-parse-time-string entry-date)))
              (journal-file (pc/journal-file-for-time time))
              (journal-buf (find-file-noselect journal-file)))
@@ -825,6 +827,11 @@ Entries are filed to journal-<year>.org matching their year."
         (setq org-map-continue-from (point))
         (save-mark-and-excursion
           (set-buffer journal-buf)
+          ;; Defensive: the buffer may already be open and narrowed from
+          ;; something else (e.g. `pc/goto-today-journal'), which would
+          ;; confuse `org-datetree-find-date-create' into operating
+          ;; within the wrong region.
+          (widen)
           (org-datetree-find-date-create
            (calendar-gregorian-from-absolute (time-to-days time)))
           (org-narrow-to-subtree)
