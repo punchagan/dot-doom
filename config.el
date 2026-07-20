@@ -344,6 +344,21 @@
 (setq org-return-follows-link t)
 (setq org-insert-heading-respect-content nil)
 
+;; The persisted org-element cache can go stale relative to whatever
+;; org-todo-keywords currently says (e.g. after changing the sequence),
+;; leaving a cached `:todo-type' out of sync with a heading's actual
+;; keyword. That silently breaks anything relying on `:todo-type', like
+;; `org-agenda-skip-scheduled-if-done'/`org-agenda-skip-deadline-if-done'.
+;; Keeping the cache in-memory only (rebuilt fresh each session) avoids it.
+(setq org-element-cache-persistent nil)
+
+;; Deliberately minimal: each state earns its place by having an
+;; actual use today. Add more (PROJ, STRT, HOLD, ...) only once
+;; something concrete needs the distinction.
+(after! org
+  (setq org-todo-keywords
+        '((sequence "DRAFT(D)" "IDEA(i)" "TODO(t)" "WAIT(w)" "|" "DONE(d)" "KILL(k)"))))
+
   (defun pc/html2org-clipboard ()
     "Convert clipboard contents from HTML to Org and then paste (yank)."
     (interactive)
@@ -375,6 +390,25 @@
   ;; Scheduled items marked as complete will not show up in your agenda view.
   (setq org-agenda-skip-scheduled-if-done t)
   (setq org-agenda-skip-deadline-if-done t)
+
+  ;; Trim padding/verbose block headers in multi-block agendas (like
+  ;; the "a" Daily driver command) so more fits on screen at once.
+  (setq org-agenda-compact-blocks t)
+
+  ;; Doom defaults this to "-3d" (start the day-agenda 3 days in the
+  ;; past). That's what made "g" seem stuck on a stale date -- it
+  ;; wasn't broken, it was working as designed, just not the design we
+  ;; want. Start on the actual current day instead.
+  (setq org-agenda-start-day nil)
+
+  ;; When an entry has both a SCHEDULED and a DEADLINE, org-agenda
+  ;; shows it twice (once per date). Show only the deadline line --
+  ;; it's the more binding of the two.
+  (setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+
+  ;; Only useful for entries with a specific time of day, which we
+  ;; don't really use yet -- mostly just empty vertical space otherwise.
+  (setq org-agenda-use-time-grid nil)
 
 (use-package! org-super-agenda
   :after org-agenda
