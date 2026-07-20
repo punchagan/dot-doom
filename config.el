@@ -456,6 +456,24 @@
                    (org-agenda-cmp-user-defined #'pc/agenda-cmp-drafts-first)
                    (org-agenda-sorting-strategy '(user-defined-up))))))))
 
+  (defface pc/agenda-draft-face
+    '((t :background "#d33682" :foreground "white" :extend t))
+    "Loud face for DRAFT entries in the agenda.")
+
+  (defun pc/agenda-highlight-drafts ()
+    "Paint a loud background across any DRAFT entry line in the agenda."
+    (save-excursion
+      (goto-char (point-min))
+      (while (not (eobp))
+        (let* ((line-end (line-end-position))
+               (line-text (buffer-substring (point) line-end)))
+          (when (equal (org-find-text-property-in-string 'todo-state line-text) "DRAFT")
+            (put-text-property (line-beginning-position) (1+ line-end)
+                                'face 'pc/agenda-draft-face)))
+        (forward-line 1))))
+
+  (add-hook 'org-agenda-finalize-hook #'pc/agenda-highlight-drafts)
+
   (add-to-list 'org-capture-templates
                '("j"
                  "Journal"
