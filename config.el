@@ -789,26 +789,46 @@ stripped from the copy."
      tag 'agenda)
     (nreverse entries)))
 
-(defun pc/create-weekly (tag start end)
+(defun pc/iso-week-title (start-day end-day)
+  "Return \"Weekly #N (YYYY)\" for the ISO week/year of the Thursday
+falling within START-DAY and END-DAY (inclusive, `time-to-days'
+values) -- ISO 8601 assigns a week's number/year by its Thursday.
+Falls back to the midpoint of the range if it doesn't contain one."
+  (require 'cal-iso)
+  (let* ((thursday (or (cl-loop for d from start-day to end-day
+                                 when (= (calendar-day-of-week
+                                          (calendar-gregorian-from-absolute d))
+                                         4)
+                                 return d)
+                        (/ (+ start-day end-day) 2)))
+         (iso (calendar-iso-from-absolute thursday)))
+    (format "Weekly #%d (%d)" (nth 0 iso) (nth 2 iso))))
+
+(defun pc/create-weekly (tag title start end)
   "Collect every entry tagged TAG across `org-agenda-files' dated
 between START and END (inclusive) and drop them, as level-2 child
-subtrees, into a new draft Hugo post created via the \"b\" capture
-template. Sources are left untouched; entries are copied, not
-refiled.
+subtrees, into a new draft Hugo post titled TITLE, created via the
+\"b\" capture template. Sources are left untouched; entries are
+copied, not refiled.
 
 Interactively prompts for TAG, restricted to known tags across
 `org-agenda-files' -- there's nothing to collect for a tag nobody's
-used -- defaulting to \"weekly\", and the date range (defaulting to
-the last 7 days)."
+used -- defaulting to \"weekly\"; the date range (defaulting to the
+last 7 days); and TITLE, pre-filled with \"Weekly #N (YYYY)\" for
+that range's ISO week (see `pc/iso-week-title'), editable before
+confirming."
   (interactive
-   (list (let ((org-last-tags-completion-table
-                (org-global-tags-completion-table (org-agenda-files))))
-           (completing-read "Use entries tagged with: "
-                             org-last-tags-completion-table
-                             nil t nil nil "weekly"))
-         (org-read-date nil t nil "Start date"
-                         (time-subtract (current-time) (days-to-time 7)))
-         (org-read-date nil t nil "End date")))
+   (let* ((tag (let ((org-last-tags-completion-table
+                      (org-global-tags-completion-table (org-agenda-files))))
+                 (completing-read "Use entries tagged with: "
+                                   org-last-tags-completion-table
+                                   nil t nil nil "weekly")))
+          (start (org-read-date nil t nil "Start date"
+                                 (time-subtract (current-time) (days-to-time 7))))
+          (end (org-read-date nil t nil "End date"))
+          (title (read-string "Title: "
+                               (pc/iso-week-title (time-to-days start) (time-to-days end)))))
+     (list tag title start end)))
   (let* ((start-day (time-to-days start))
          (end-day (time-to-days end))
          (entries (pc/collect-tagged-subtrees tag start-day end-day)))
@@ -816,7 +836,11 @@ the last 7 days)."
       (user-error "No entries tagged :%s: between %s and %s" tag
                   (format-time-string "%Y-%m-%d" start)
                   (format-time-string "%Y-%m-%d" end)))
-    (org-capture nil "b")
+    ;; org-hugo-new-subtree-post-capture-template always prompts for its
+    ;; own title via `read-from-minibuffer' with no way to pass one in --
+    ;; feed it TITLE instead of prompting a second time.
+    (cl-letf (((symbol-function 'read-from-minibuffer) (lambda (&rest _) title)))
+      (org-capture nil "b"))
     (org-entry-put (point) "EXPORT_OPTIONS" "H:0 tags:nil")
     (dolist (entry entries)
       (org-paste-subtree 2 entry))
