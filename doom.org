@@ -1037,6 +1037,69 @@ not to the "Needs review" search block below it.
                  (file+olp+datetree pc/current-journal-file)
                  "* %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"))
 #+END_SRC
+**** Template to capture tasks
+
+Unlike journal entries, tasks go to =tasks.org= (flat, no datetree), so they
+get filed by what they're about instead of by when they were captured. No
+forced heading structure yet -- headings can be added later, once real clumps
+show up, and refiled into by hand.
+
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'org-capture-templates
+               '("t"
+                 "Task"
+                 entry
+                 (file "tasks.org")
+                 "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"
+                 :prepend t))
+#+END_SRC
+**** Template to capture drafts
+
+Zero-decision capture: no judgment about what this is or where it
+belongs, just get it down. Lands in =Inbox.org= (same file mobile
+captures to). No date needed -- the "Needs review" section of the
+daily driver agenda finds DRAFT entries by keyword, regardless of
+date, until it's dispatched: changing DRAFT to another keyword in
+place, or refiling it elsewhere.
+
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'org-capture-templates
+               '("d"
+                 "Draft"
+                 entry
+                 (file "Inbox.org")
+                 "* DRAFT %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"
+                 :prepend t))
+#+END_SRC
+**** Quick dispatch for drafts
+
+A single-keypress menu for turning a captured entry into something
+else -- same idea as org-drafts's hydra, but using =transient=
+(bundled with Emacs, no new dependency), wired to only the actions
+actually used here.
+
+#+begin_src emacs-lisp
+  (defun pc/org-copy-entry ()
+    "Copy the current entry (subtree, properties stripped) to the kill ring."
+    (interactive)
+    (let ((text (pc/strip-property-drawer
+                 (buffer-substring-no-properties
+                  (save-excursion (org-back-to-heading t) (point))
+                  (save-excursion (org-end-of-subtree t t) (point))))))
+      (kill-new text)
+      (message "Copied entry to kill ring")))
+
+  (transient-define-prefix pc/dispatch-entry ()
+    "Dispatch the current entry to its next state."
+    ["Dispatch entry"
+     ("t" "TODO" (lambda () (interactive) (org-todo "TODO")))
+     ("j" "Journal (nothing to do)" pc/org-refile-subtree-to-journal)
+     ("k" "KILL" (lambda () (interactive) (org-todo "KILL")))
+     ("w" "Refile" org-refile)
+     ("c" "Copy to clipboard" pc/org-copy-entry)])
+
+  (map! :map org-mode-map "C-c d" #'pc/dispatch-entry)
+#+end_src
 **** Custom code to fire off journal mode
 
 #+begin_src emacs-lisp :tangle packages.el

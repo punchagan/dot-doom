@@ -463,6 +463,43 @@
                  (file+olp+datetree pc/current-journal-file)
                  "* %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"))
 
+  (add-to-list 'org-capture-templates
+               '("t"
+                 "Task"
+                 entry
+                 (file "tasks.org")
+                 "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"
+                 :prepend t))
+
+  (add-to-list 'org-capture-templates
+               '("d"
+                 "Draft"
+                 entry
+                 (file "Inbox.org")
+                 "* DRAFT %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"
+                 :prepend t))
+
+  (defun pc/org-copy-entry ()
+    "Copy the current entry (subtree, properties stripped) to the kill ring."
+    (interactive)
+    (let ((text (pc/strip-property-drawer
+                 (buffer-substring-no-properties
+                  (save-excursion (org-back-to-heading t) (point))
+                  (save-excursion (org-end-of-subtree t t) (point))))))
+      (kill-new text)
+      (message "Copied entry to kill ring")))
+
+  (transient-define-prefix pc/dispatch-entry ()
+    "Dispatch the current entry to its next state."
+    ["Dispatch entry"
+     ("t" "TODO" (lambda () (interactive) (org-todo "TODO")))
+     ("j" "Journal (nothing to do)" pc/org-refile-subtree-to-journal)
+     ("k" "KILL" (lambda () (interactive) (org-todo "KILL")))
+     ("w" "Refile" org-refile)
+     ("c" "Copy to clipboard" pc/org-copy-entry)])
+
+  (map! :map org-mode-map "C-c d" #'pc/dispatch-entry)
+
 (defun pc/journal (&optional mode)
   "Open a new frame for journaling.
 
