@@ -901,6 +901,45 @@ keyword is stripped first -- journal entries are notes, not tasks."
                                (s-contains? "Mobile.org" x)))
               (org-agenda-files))))
 
+  (defun pc/org-todo-keywords-for-orgzly ()
+    "Return the first `org-todo-keywords' sequence as an Orgzly-style
+\"pref_key_states\" string: keywords space-separated, fast-select
+\"(letter)\" suffixes stripped, \"|\" kept as the not-done/done divider."
+    (mapconcat (lambda (kw) (replace-regexp-in-string "(.*)" "" kw))
+               (cdar org-todo-keywords)
+               " "))
+
+  (defun pc/update-orgzly-settings (&optional new-note-state)
+    "Update pref_key_states and pref_key_new_note_state in
+orgzly-settings.org to match the current `org-todo-keywords', instead
+of letting Orgzly's own copy silently drift out of sync. Everything
+else in the settings JSON is left untouched. NEW-NOTE-STATE (default
+\"DRAFT\") becomes Orgzly's default state for notes created in the app."
+    (interactive
+     (list (read-string "Default state for new Orgzly notes: " nil nil "DRAFT")))
+    (let* ((file (expand-file-name "orgzly-settings.org" org-directory))
+           (states (pc/org-todo-keywords-for-orgzly))
+           (new-note-state (or new-note-state "DRAFT")))
+      (with-current-buffer (find-file-noselect file)
+        (save-excursion
+          (goto-char (point-min))
+          (unless (re-search-forward "^{\"settings\":" nil t)
+            (user-error "No settings JSON found in %s" file))
+          (goto-char (match-beginning 0))
+          (let* ((json-start (point))
+                 (json-end (line-end-position))
+                 (data (json-parse-string
+                        (buffer-substring-no-properties json-start json-end))))
+            (puthash "pref_key_states" states (gethash "settings" data))
+            (puthash "pref_key_new_note_state" new-note-state (gethash "settings" data))
+            (delete-region json-start json-end)
+            (goto-char json-start)
+            (insert (json-serialize data))
+            (json-pretty-print json-start (point))))
+        (save-buffer))
+      (message "Updated Orgzly settings: states=\"%s\", new-note-state=\"%s\""
+               states new-note-state)))
+
 (require 'org-crypt)
 
 (after! org
