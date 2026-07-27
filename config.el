@@ -846,6 +846,25 @@ confirming."
       (org-paste-subtree 2 entry))
     (org-capture-finalize)))
 
+(defun pc/aggregate-subtree-tags ()
+  "Set the tags on the headline at point to the union of its own
+tags and every tag used on any headline within its subtree (own
+tags only, not each entry's inherited ones -- inheritance would
+otherwise pull in unrelated ancestor tags from outside the subtree).
+
+Meant for weekly posts built by `pc/create-weekly': tags on the
+entries it collected often change as the post is edited afterward,
+so this is called by hand once editing is done, not automatically
+from `pc/create-weekly' itself."
+  (interactive)
+  (unless (org-at-heading-p) (org-back-to-heading t))
+  (let (tags)
+    (save-excursion
+      (org-map-entries
+       (lambda () (setq tags (append (org-get-tags nil t) tags)))
+       nil 'tree))
+    (org-set-tags (delete-dups tags))))
+
 (defun pc/journal-file-for-time (time)
   "Return the journal file that should hold an entry dated TIME.
 Every year's entries go to their own journal-<year>.org."
