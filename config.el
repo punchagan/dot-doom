@@ -172,7 +172,20 @@
   ;; first-time startup on Emacs > 26.3.
   (setq custom-safe-themes t)
 
-(setq doom-theme 'doom-solarized-dark)
+(setq doom-theme 'leuven)
+
+(defun pc/load-theme (theme)
+  (mapc #'disable-theme custom-enabled-themes)
+  (load-theme theme t)
+  (setq doom-theme theme))
+
+(defun pc/day-theme ()
+  (interactive)
+  (pc/load-theme 'leuven))
+
+(defun pc/night-theme ()
+  (interactive)
+  (pc/load-theme 'leuven-dark))
 
   (when (boundp 'display-fill-column-indicator)
     (setq-default indicate-buffer-boundaries 'left)
