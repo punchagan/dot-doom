@@ -1402,14 +1402,21 @@ This is the code to process ~hugo:~ protocol links when exporting using
 #+begin_src emacs-lisp
 (org-link-set-parameters "hugo" :export #'pc/org-hugo-link-export-to-md)
 
+(defvar pc/ignore-hugo-links-in-export nil
+  "When non-nil, `pc/org-hugo-link-export-to-md' leaves hugo: links
+as-is on a non-Hugo backend instead of erroring. Let-bound by
+`pc/export-blog-posts', so other exports still catch broken
+hugo: links as errors.")
+
 (defun pc/org-hugo-link-export-to-md (path desc backend &optional info)
   "Export a link to a Hugo blog link in markdown format."
-  (message (format "path: %s, desc: %s, backend: %s" path desc backend))
   (cond
    ((eq backend 'md)
     (if (equal org-export-current-backend 'hugo)
         (format "[%s]({{< relref \"%s\" >}})" desc path)
       (error "Cannot export Hugo link to non-Hugo backend")))
+   (pc/ignore-hugo-links-in-export
+    (format "[[hugo:%s][%s]]" path desc))
    (t (error "Cannot export Hugo link to non-Hugo backend"))))
 #+end_src
 
@@ -1454,6 +1461,37 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
         (if (use-region-p)
             (delete-region (region-beginning) (region-end)))
         (insert (format "[[%s][%s]]" link description))))))
+#+end_src
+
+*** Export blog-posts.org to the blog repo
+
+~content-org/all-posts.org~ in the blog repo is a stale, unused-by-the-build
+reference copy of =blog-posts.org= (posts are individual =.md= files now).
+Nothing regenerates it automatically -- this makes it an export, callable
+from the blog's ~deploy.sh~ via ~emacsclient~, e.g. ~emacsclient -e
+"(pc/export-blog-posts)"~.
+
+Uses the ~org~ export backend (=ox-org=) rather than a plain file copy, so
+~COMMENT~ subtrees and ~:noexport:~-tagged entries are dropped from the
+exported copy, same as any other Org export.
+
+#+begin_src emacs-lisp
+(defun pc/export-blog-posts ()
+  "Org-export blog-posts.org into the blog repo's content-org/all-posts.org.
+The blog repo's location is read from blog-posts.org's own
+HUGO_BASE_DIR keyword."
+  (interactive)
+  (require 'ox-org)
+  (with-current-buffer (find-file-noselect (expand-file-name "blog-posts.org" org-directory))
+    (let* ((base-dir (cadr (assoc "HUGO_BASE_DIR" (org-collect-keywords '("HUGO_BASE_DIR")))))
+           (outfile (expand-file-name "content-org/all-posts.org" base-dir))
+           (org-export-use-babel nil)
+           (pc/ignore-hugo-links-in-export t))
+      (org-export-to-file 'org outfile
+        nil nil nil nil
+        '(:with-title nil :with-author nil :with-email nil
+          :with-date nil :with-creator nil :time-stamp-file nil
+          :with-tags t :with-properties t)))))
 #+end_src
 
 *** Create Weekly blog post

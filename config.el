@@ -716,14 +716,21 @@ global-shortcut commands above."
 
 (org-link-set-parameters "hugo" :export #'pc/org-hugo-link-export-to-md)
 
+(defvar pc/ignore-hugo-links-in-export nil
+  "When non-nil, `pc/org-hugo-link-export-to-md' leaves hugo: links
+as-is on a non-Hugo backend instead of erroring. Let-bound by
+`pc/export-blog-posts', so other exports still catch broken
+hugo: links as errors.")
+
 (defun pc/org-hugo-link-export-to-md (path desc backend &optional info)
   "Export a link to a Hugo blog link in markdown format."
-  (message (format "path: %s, desc: %s, backend: %s" path desc backend))
   (cond
    ((eq backend 'md)
     (if (equal org-export-current-backend 'hugo)
         (format "[%s]({{< relref \"%s\" >}})" desc path)
       (error "Cannot export Hugo link to non-Hugo backend")))
+   (pc/ignore-hugo-links-in-export
+    (format "[[hugo:%s][%s]]" path desc))
    (t (error "Cannot export Hugo link to non-Hugo backend"))))
 
 (defun pc/get-blog-headline-links (filename)
@@ -764,6 +771,23 @@ EXPORT_FILE_NAME tag. If a region is selected, replace it with the link."
         (if (use-region-p)
             (delete-region (region-beginning) (region-end)))
         (insert (format "[[%s][%s]]" link description))))))
+
+(defun pc/export-blog-posts ()
+  "Org-export blog-posts.org into the blog repo's content-org/all-posts.org.
+The blog repo's location is read from blog-posts.org's own
+HUGO_BASE_DIR keyword."
+  (interactive)
+  (require 'ox-org)
+  (with-current-buffer (find-file-noselect (expand-file-name "blog-posts.org" org-directory))
+    (let* ((base-dir (cadr (assoc "HUGO_BASE_DIR" (org-collect-keywords '("HUGO_BASE_DIR")))))
+           (outfile (expand-file-name "content-org/all-posts.org" base-dir))
+           (org-export-use-babel nil)
+           (pc/ignore-hugo-links-in-export t))
+      (org-export-to-file 'org outfile
+        nil nil nil nil
+        '(:with-title nil :with-author nil :with-email nil
+          :with-date nil :with-creator nil :time-stamp-file nil
+          :with-tags t :with-properties t)))))
 
 (defun pc/entry-date-at-point ()
   "Return the day number (see `time-to-days') for the entry at point,
