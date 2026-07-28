@@ -692,7 +692,7 @@ global-shortcut commands above."
                  ":EXPORT_DESCRIPTION:"
                  ":EXPORT_HUGO_CUSTOM_FRONT_MATTER:"
                  ":END:"
-                 "- [ ] Add an image and maybe even og:image stuff"
+                 "- [ ] Add an image; for og:image, set :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :images '(\"ox-hugo/photo.jpg\")"
                  "%?\n")          ;Place the cursor here finally
                "\n")))
 
