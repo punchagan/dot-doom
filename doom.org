@@ -1592,6 +1592,52 @@ themselves."
      (seq-remove (lambda (f) (member f blog-files)) (org-agenda-files)))
     (nreverse entries)))
 
+(defun pc/habit-weekly-counts (start-day end-day)
+  "Return an alist of (HEADING . COUNT) for every entry across
+`org-agenda-files' with a non-nil :SHOW_IN_WEEKLY: property, COUNT
+being how many times it was marked DONE between START-DAY and
+END-DAY (inclusive).
+
+Counts are read off the habit's own state-change log lines (e.g. -
+State \"DONE\"       from \"\"           [2026-07-25 Sat 23:24] --
+see recurring.org), not a :LOGBOOK: drawer -- these habits log
+completions directly under the heading."
+  (let (counts)
+    (org-map-entries
+     (lambda ()
+       (when (org-entry-get nil "SHOW_IN_WEEKLY")
+         (let ((heading (org-get-heading t t t t))
+               (body (buffer-substring-no-properties
+                      (point) (save-excursion (org-end-of-subtree t t) (point))))
+               (count 0)
+               (pos 0))
+           (while (string-match
+                   "- State \"DONE\"\\s-+from \"[^\"]*\"\\s-+\\[\\([^]]+\\)\\]"
+                   body pos)
+             (when (<= start-day
+                       (time-to-days (org-time-string-to-time (match-string 1 body)))
+                       end-day)
+               (setq count (1+ count)))
+             (setq pos (match-end 0)))
+           (push (cons heading count) counts))))
+     nil 'agenda)
+    (nreverse counts)))
+
+(defun pc/habit-weekly-report (start-day end-day)
+  "Return an Org subtree (as text, a level-1 heading followed by a
+plain list) summarizing every :SHOW_IN_WEEKLY: habit's count between
+START-DAY and END-DAY -- for `pc/create-weekly' to paste in
+alongside the week's collected entries. nil when nothing's tagged
+:SHOW_IN_WEEKLY: yet, so there's nothing to paste."
+  (let ((counts (pc/habit-weekly-counts start-day end-day)))
+    (when counts
+      (concat "* Habits\n"
+              (mapconcat
+               (lambda (c) (format "- %s: %d time%s" (car c) (cdr c)
+                                    (if (= (cdr c) 1) "" "s")))
+               counts "\n")
+              "\n"))))
+
 (defun pc/iso-week-title (start-day end-day)
   "Return \"Weekly #N (YYYY)\" for the ISO week/year of the Thursday
 falling within START-DAY and END-DAY (inclusive, `time-to-days'
@@ -1613,6 +1659,12 @@ between START and END (inclusive) and drop them, as level-2 child
 subtrees, into a new draft Hugo post titled TITLE, created via the
 \"b\" capture template. Sources are left untouched; entries are
 copied, not refiled.
+
+Also appends a \"Habits\" section (see `pc/habit-weekly-report')
+tallying any :SHOW_IN_WEEKLY: habit's completions over the same
+range -- easy, low-effort weekly filler (\"3 gym sessions this
+week\") for whichever habits are worth surfacing that way. Skipped
+entirely when nothing's tagged :SHOW_IN_WEEKLY: yet.
 
 Interactively prompts for TAG, restricted to known tags across
 `org-agenda-files' -- there's nothing to collect for a tag nobody's
@@ -1647,6 +1699,9 @@ confirming."
     (org-entry-put (point) "EXPORT_OPTIONS" "H:0 tags:nil")
     (dolist (entry entries)
       (org-paste-subtree 2 entry))
+    (let ((habits (pc/habit-weekly-report start-day end-day)))
+      (when habits
+        (org-paste-subtree 2 habits)))
     (org-capture-finalize)))
 
 (defun pc/aggregate-subtree-tags ()
