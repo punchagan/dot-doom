@@ -625,6 +625,21 @@ global-shortcut commands above."
       (end-of-buffer)
       (mapc (lambda (item) (insert (format "- %s\n" (org-no-properties item)))) headlines)))
 
+  (defun pc/entries-created-today-count ()
+    "Return the number of entries across `org-agenda-files' with their
+own :CREATED: property dated today. Inherited values don't count --
+this is meant to reflect actual notes/captures made today, not every
+descendant of one entry created earlier."
+    (let ((today (format-time-string "%Y-%m-%d"))
+          (count 0))
+      (org-map-entries
+       (lambda ()
+         (let ((created (org-entry-get nil "CREATED")))
+           (when (and created (string-match-p (regexp-quote today) created))
+             (setq count (1+ count)))))
+       nil 'agenda)
+      count))
+
   (defun pc/current-task-to-status ()
     (interactive)
     (if (fboundp 'org-clocking-p)
@@ -632,9 +647,11 @@ global-shortcut commands above."
             (call-process "dconf" nil nil nil "write"
                           "/org/gnome/shell/extensions/simple-message/message"
                           (concat "'" (org-clock-get-clock-string) "'"))
-          (call-process "dconf" nil nil nil "write"
-                        "/org/gnome/shell/extensions/simple-message/message"
-                        "'No active clock'"))))
+          (let ((count (pc/entries-created-today-count)))
+            (call-process "dconf" nil nil nil "write"
+                          "/org/gnome/shell/extensions/simple-message/message"
+                          (format "'%d %s created today'"
+                                  count (if (= count 1) "entry" "entries")))))))
   (run-with-timer 0 60 #'pc/current-task-to-status)
   (add-hook 'org-clock-in-hook #'pc/current-task-to-status)
   (add-hook 'org-clock-out-hook #'pc/current-task-to-status)
