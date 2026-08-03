@@ -816,8 +816,15 @@ any, removed entirely."
 `org-agenda-files' whose date (`pc/entry-date-at-point') falls
 between START-DAY and END-DAY, inclusive. Entries are left in place;
 this only reads and copies. Each entry's own property drawer is
-stripped from the copy."
-  (let (entries)
+stripped from the copy.
+
+Skips blog-posts.org and draft-blog-posts.org -- these hold the
+weekly posts themselves (and drafts thereof), so scanning them here
+would fold earlier weekly posts, or the in-progress one, back into
+themselves."
+  (let ((blog-files (mapcar (lambda (f) (expand-file-name f org-directory))
+                             '("blog-posts.org" "draft-blog-posts.org")))
+        entries)
     (org-map-entries
      (lambda ()
        (let ((date (pc/entry-date-at-point)))
@@ -826,7 +833,8 @@ stripped from the copy."
                   (buffer-substring-no-properties
                    (point) (save-excursion (org-end-of-subtree t t) (point))))
                  entries))))
-     tag 'agenda)
+     tag
+     (seq-remove (lambda (f) (member f blog-files)) (org-agenda-files)))
     (nreverse entries)))
 
 (defun pc/iso-week-title (start-day end-day)
