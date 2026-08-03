@@ -653,10 +653,8 @@ global-shortcut commands above."
       (mapc (lambda (item) (insert (format "- %s\n" (org-no-properties item)))) headlines)))
 
   (defun pc/entries-created-today-count ()
-    "Return the number of entries across `org-agenda-files' with their
-own :CREATED: property dated today. Inherited values don't count --
-this is meant to reflect actual notes/captures made today, not every
-descendant of one entry created earlier."
+    "Return the number of entries across `org-agenda-files' with a
+:CREATED: property dated today."
     (let ((today (format-time-string "%Y-%m-%d"))
           (count 0))
       (org-map-entries
