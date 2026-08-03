@@ -377,7 +377,10 @@
 ;; something concrete needs the distinction.
 (after! org
   (setq org-todo-keywords
-        '((sequence "DRAFT(D)" "IDEA(i)" "TODO(t)" "WAIT(w)" "|" "DONE(d)" "KILL(k)"))))
+        '((sequence "DRAFT(f)" "IDEA(i)" "TODO(t)" "WAIT(w)" "|" "DONE(d)" "KILL(k)")))
+  ;; Without this, completing a repeating task resets it to the first
+  ;; keyword in the sequence above (DRAFT) instead of TODO.
+  (setq org-todo-repeat-to-state "TODO"))
 
   (defun pc/html2org-clipboard ()
     "Convert clipboard contents from HTML to Org and then paste (yank)."
