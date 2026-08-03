@@ -377,7 +377,7 @@
 ;; something concrete needs the distinction.
 (after! org
   (setq org-todo-keywords
-        '((sequence "DRAFT(f)" "IDEA(i)" "TODO(t)" "WAIT(w)" "|" "DONE(d)" "KILL(k)")))
+        '((sequence "DRAFT(f)" "IDEA(i)" "TODO(t)" "DOING(o)" "WAIT(w)" "|" "DONE(d)" "KILL(k)")))
   ;; Without this, completing a repeating task resets it to the first
   ;; keyword in the sequence above (DRAFT) instead of TODO.
   (setq org-todo-repeat-to-state "TODO"))
@@ -449,6 +449,21 @@
           nil
         (save-excursion (or (outline-next-heading) (point-max))))))
 
+  (defun pc/agenda-skip-unless-undated-doing ()
+    "Skip the entry unless it's DOING with no date.
+
+DOING entries that do have a date already surface in the agenda
+block above via the \"In progress\" super-agenda group -- this only
+needs to catch the ones that would otherwise show up nowhere and
+quietly fall off the backlog (a book, paper, course, ... started and
+forgotten)."
+    (let ((keyword (org-get-todo-state)))
+      (if (and (equal keyword "DOING")
+               (not (org-entry-get nil "SCHEDULED"))
+               (not (org-entry-get nil "DEADLINE")))
+          nil
+        (save-excursion (or (outline-next-heading) (point-max))))))
+
   (defun pc/agenda-cmp-drafts-first (a b)
     "Sort DRAFT entries before everything else; no preference otherwise."
     (let ((a-draft (equal (get-text-property 0 'todo-state a) "DRAFT"))
@@ -463,6 +478,11 @@
                      (org-super-agenda-groups
                       '((:name "Habits" :habit t)
                         (:name "Important" :priority "A")
+                        ;; Dated DOING items get their own heading here
+                        ;; instead of falling into "Tasks" -- same
+                        ;; started-and-forgotten problem the undated
+                        ;; "In progress" block below covers.
+                        (:name "In progress" :todo "DOING")
                         ;; A missed deadline needs urgent action; a missed
                         ;; schedule just needs a new date -- kept separate.
                         (:name "Overdue" :deadline past)
@@ -472,6 +492,13 @@
                         ;; label instead of falling into the unnamed
                         ;; default bucket. Matches John's "Tasks" group.
                         (:name "Tasks" :not (:habit t))))))
+            ;; Undated DOING entries -- above "Needs review" since these
+            ;; are further along (already started) than an unprocessed
+            ;; draft or a brand-new TODO.
+            (tags "LEVEL>0"
+                  ((org-agenda-overriding-header "In progress")
+                   (org-agenda-skip-function
+                    #'pc/agenda-skip-unless-undated-doing)))
             (tags "LEVEL>0"
                   ((org-agenda-overriding-header "Needs review")
                    (org-agenda-skip-function
