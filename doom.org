@@ -1360,6 +1360,24 @@ Quickly create a summary of headlines tagged with specific tag
        nil 'agenda)
       count))
 
+  (org-ql-defpred created-today ()
+    "Return non-nil if entry's :CREATED: property is dated today.
+Unlike the built-in `ts-inactive' predicate, this only looks at
+:CREATED:, so it won't also match entries with some other inactive
+timestamp today (e.g. a habit's completion logged in :LOGBOOK:)."
+    :body
+    (let ((created (org-entry-get (point) "CREATED")))
+      (and created (string-match-p (regexp-quote (format-time-string "%Y-%m-%d")) created))))
+
+  (defun pc/agenda-created-today ()
+    "Show entries across `org-agenda-files' with a :CREATED: property
+dated today -- the same entries counted by
+`pc/entries-created-today-count'."
+    (interactive)
+    (org-ql-search (org-agenda-files)
+      '(created-today)
+      :title "Created today"))
+
   (defun pc/current-task-to-status ()
     (interactive)
     (if (fboundp 'org-clocking-p)
