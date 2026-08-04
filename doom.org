@@ -1073,15 +1073,20 @@ unprocessed draft is impossible to ignore until it's dispatched.
     "Loud face for DRAFT entries in the agenda.")
 
   (defun pc/agenda-highlight-drafts ()
-    "Paint a loud background across any DRAFT entry line in the agenda."
+    "Paint a loud background across any DRAFT entry line in the agenda.
+
+Uses `add-face-text-property' rather than `put-text-property' so this
+background layers on top of whatever's already there (e.g. the boxed
+todo-keyword face) instead of replacing it outright -- otherwise the
+DRAFT keyword loses its box and looks like plain text."
     (save-excursion
       (goto-char (point-min))
       (while (not (eobp))
         (let* ((line-end (line-end-position))
                (line-text (buffer-substring (point) line-end)))
           (when (equal (org-find-text-property-in-string 'todo-state line-text) "DRAFT")
-            (put-text-property (line-beginning-position) (1+ line-end)
-                                'face 'pc/agenda-draft-face)))
+            (add-face-text-property (line-beginning-position) (1+ line-end)
+                                     'pc/agenda-draft-face)))
         (forward-line 1))))
 
   (add-hook 'org-agenda-finalize-hook #'pc/agenda-highlight-drafts)
