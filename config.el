@@ -438,29 +438,22 @@
   :config
   (org-super-agenda-mode 1))
 
-  (defun pc/agenda-skip-unless-needs-review ()
-    "Skip the entry unless it's a DRAFT, or a TODO with no date."
+  (defun pc/agenda-skip-unless-review-or-in-progress ()
+    "Skip the entry unless it's a DRAFT, or a TODO/DOING with no date.
+
+Combines what used to be two separate `LEVEL>0' searches
+(`pc/agenda-skip-unless-needs-review' and the DOING equivalent) into
+one -- `LEVEL>0' matches every heading in every agenda file, so
+running that scan twice doubles the cost of what's already the
+priciest part of rebuilding the agenda. `org-super-agenda-groups' on
+the block below splits the single result set back into \"In
+progress\"/\"Needs review\" sections."
     (let ((keyword (org-get-todo-state)))
       (if (or (equal keyword "DRAFT")
               ;; Should this be only TODO?
-              (and (equal keyword "TODO")
+              (and (member keyword '("TODO" "DOING"))
                    (not (org-entry-get nil "SCHEDULED"))
                    (not (org-entry-get nil "DEADLINE"))))
-          nil
-        (save-excursion (or (outline-next-heading) (point-max))))))
-
-  (defun pc/agenda-skip-unless-undated-doing ()
-    "Skip the entry unless it's DOING with no date.
-
-DOING entries that do have a date already surface in the agenda
-block above via the \"In progress\" super-agenda group -- this only
-needs to catch the ones that would otherwise show up nowhere and
-quietly fall off the backlog (a book, paper, course, ... started and
-forgotten)."
-    (let ((keyword (org-get-todo-state)))
-      (if (and (equal keyword "DOING")
-               (not (org-entry-get nil "SCHEDULED"))
-               (not (org-entry-get nil "DEADLINE")))
           nil
         (save-excursion (or (outline-next-heading) (point-max))))))
 
@@ -492,17 +485,17 @@ forgotten)."
                         ;; label instead of falling into the unnamed
                         ;; default bucket. Matches John's "Tasks" group.
                         (:name "Tasks" :not (:habit t))))))
-            ;; Undated DOING entries -- above "Needs review" since these
-            ;; are further along (already started) than an unprocessed
-            ;; draft or a brand-new TODO.
+            ;; Undated DRAFT/TODO/DOING entries -- one combined search
+            ;; (see `pc/agenda-skip-unless-review-or-in-progress'),
+            ;; split back into "In progress" (further along -- already
+            ;; started) above "Needs review" via super-agenda groups.
             (tags "LEVEL>0"
-                  ((org-agenda-overriding-header "In progress")
+                  ((org-agenda-overriding-header "")
                    (org-agenda-skip-function
-                    #'pc/agenda-skip-unless-undated-doing)))
-            (tags "LEVEL>0"
-                  ((org-agenda-overriding-header "Needs review")
-                   (org-agenda-skip-function
-                    #'pc/agenda-skip-unless-needs-review)
+                    #'pc/agenda-skip-unless-review-or-in-progress)
+                   (org-super-agenda-groups
+                    '((:name "In progress" :todo "DOING")
+                      (:name "Needs review" :todo ("DRAFT" "TODO"))))
                    (org-agenda-cmp-user-defined #'pc/agenda-cmp-drafts-first)
                    (org-agenda-sorting-strategy '(user-defined-up))))))))
 
