@@ -79,6 +79,8 @@
 (package! okra
   :recipe (:local-repo "~/code/segfault/okra/emacs"))
 
+(package! org-ql)
+
 (package! org-super-agenda)
 
   (package! ox-gfm)

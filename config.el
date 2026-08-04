@@ -438,35 +438,6 @@
   :config
   (org-super-agenda-mode 1))
 
-  (defun pc/agenda-skip-unless-review-or-in-progress ()
-    "Skip the entry unless it's a DRAFT, or a TODO/DOING with no date.
-
-Combines what used to be two separate searches
-(`pc/agenda-skip-unless-needs-review' and the DOING equivalent) into
-one. `org-super-agenda-groups' on the block below splits the single
-result set back into \"In progress\"/\"Needs review\" sections.
-
-The block's own match string (\"TODO={DRAFT\\\\|TODO\\\\|DOING}\",
-not `LEVEL>0') already keeps every other heading in every agenda
-file -- journal entries, DONE items, plain notes, ... -- from ever
-reaching this function; it only has to decide whether a DRAFT/TODO/
-DOING entry is dated."
-    (let ((keyword (org-get-todo-state)))
-      (if (or (equal keyword "DRAFT")
-              ;; Should this be only TODO?
-              (and (member keyword '("TODO" "DOING"))
-                   (not (org-entry-get nil "SCHEDULED"))
-                   (not (org-entry-get nil "DEADLINE"))))
-          nil
-        (save-excursion (or (outline-next-heading) (point-max))))))
-
-  (defun pc/agenda-cmp-drafts-first (a b)
-    "Sort DRAFT entries before everything else; no preference otherwise."
-    (let ((a-draft (equal (get-text-property 0 'todo-state a) "DRAFT"))
-          (b-draft (equal (get-text-property 0 'todo-state b) "DRAFT")))
-      (cond ((and a-draft (not b-draft)) -1)
-            ((and b-draft (not a-draft)) 1))))
-
   (setq org-agenda-custom-commands
         '(("a" "Daily driver"
            ((agenda ""
@@ -488,19 +459,18 @@ DOING entry is dated."
                         ;; label instead of falling into the unnamed
                         ;; default bucket. Matches John's "Tasks" group.
                         (:name "Tasks" :not (:habit t))))))
-            ;; Undated DRAFT/TODO/DOING entries -- one combined search
-            ;; (see `pc/agenda-skip-unless-review-or-in-progress'),
-            ;; split back into "In progress" (further along -- already
-            ;; started) above "Needs review" via super-agenda groups.
-            (tags "TODO={DRAFT\\|TODO\\|DOING}"
-                  ((org-agenda-overriding-header "")
-                   (org-agenda-skip-function
-                    #'pc/agenda-skip-unless-review-or-in-progress)
-                   (org-super-agenda-groups
-                    '((:name "In progress" :todo "DOING")
-                      (:name "Needs review" :todo ("DRAFT" "TODO"))))
-                   (org-agenda-cmp-user-defined #'pc/agenda-cmp-drafts-first)
-                   (org-agenda-sorting-strategy '(user-defined-up))))))))
+            ;; Undated DRAFT/TODO/DOING entries -- DRAFT unconditionally,
+            ;; TODO/DOING only when neither SCHEDULED nor DEADLINE is
+            ;; set. Split back into "In progress" (further along --
+            ;; already started) above "Needs review" via super-agenda
+            ;; groups.
+            (org-ql-block '(or (todo "DRAFT")
+                                (and (todo "TODO" "DOING")
+                                     (not (or (scheduled) (deadline)))))
+                          ((org-ql-block-header "")
+                           (org-super-agenda-groups
+                            '((:name "In progress" :todo "DOING")
+                              (:name "Needs review" :todo ("DRAFT" "TODO"))))))))))
 
   (defface pc/agenda-draft-face
     '((t :background "#d33682" :foreground "white" :extend t))
