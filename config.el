@@ -701,6 +701,53 @@ global-shortcut commands above."
 
   (require 'org-tempo)
 
+  (defun pc/voice-note-created-timestamp (recording-name)
+    "Return an inactive Org timestamp string for RECORDING-NAME's
+embedded capture time (e.g. \"voice-20260804T153000\", from the
+phone-side capture script's filename), or the current time if it
+doesn't match that pattern."
+    (if (string-match "voice-\\([0-9]\\{8\\}\\)T\\([0-9]\\{6\\}\\)" recording-name)
+        (let* ((d (match-string 1 recording-name))
+               (tm (match-string 2 recording-name))
+               (time (encode-time
+                      (string-to-number (substring tm 4 6))
+                      (string-to-number (substring tm 2 4))
+                      (string-to-number (substring tm 0 2))
+                      (string-to-number (substring d 6 8))
+                      (string-to-number (substring d 4 6))
+                      (string-to-number (substring d 0 4)))))
+          (format-time-string (org-time-stamp-format :long :inactive) time))
+      (format-time-string (org-time-stamp-format :long :inactive))))
+
+  (defun pc/file-voice-transcript-as-draft (txt-file created)
+    "Insert TXT-FILE's contents as a new level-1 DRAFT entry at the top
+of Inbox.org -- same shape as the \"d\" capture template. The
+transcript's first line becomes the heading and the rest becomes the
+body, mirroring org-drafts' `org-drafts-default-body-function' (move
+first line of body to the title) -- Whisper's .txt output already
+has one line per segment/sentence, so this lines up naturally. CREATED
+is an inactive Org timestamp string for the entry's :CREATED:
+property."
+    (let* ((text (string-trim (with-temp-buffer
+                                 (insert-file-contents txt-file)
+                                 (buffer-string))))
+           (nl (string-match "\n" text))
+           (title (string-trim (if nl (substring text 0 nl) text)))
+           (body (if nl (string-trim (substring text (1+ nl))) ""))
+           (entry (format "* DRAFT %s\n:PROPERTIES:\n:CREATED: %s\n:END:\n%s\n"
+                           title created body)))
+      (with-current-buffer (find-file-noselect (expand-file-name "Inbox.org" org-directory))
+        (goto-char (point-min))
+        (org-paste-subtree 1 entry)
+        (save-buffer))))
+
+  (defun pc/capture-voice-note (txt-file recording-name)
+    "Entry point for process-voice-notes.sh (via emacsclient): file
+TXT-FILE's transcript into Inbox.org as a DRAFT, dated from
+RECORDING-NAME's embedded timestamp."
+    (pc/file-voice-transcript-as-draft
+     txt-file (pc/voice-note-created-timestamp recording-name)))
+
   (setq org-babel-load-languages '((emacs-lisp . t)
                                    (python . t)
                                    (sh . t)))
