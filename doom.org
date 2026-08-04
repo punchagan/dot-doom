@@ -1012,13 +1012,16 @@ into the search block below it, or vice versa.
   (defun pc/agenda-skip-unless-review-or-in-progress ()
     "Skip the entry unless it's a DRAFT, or a TODO/DOING with no date.
 
-Combines what used to be two separate `LEVEL>0' searches
+Combines what used to be two separate searches
 (`pc/agenda-skip-unless-needs-review' and the DOING equivalent) into
-one -- `LEVEL>0' matches every heading in every agenda file, so
-running that scan twice doubles the cost of what's already the
-priciest part of rebuilding the agenda. `org-super-agenda-groups' on
-the block below splits the single result set back into \"In
-progress\"/\"Needs review\" sections."
+one. `org-super-agenda-groups' on the block below splits the single
+result set back into \"In progress\"/\"Needs review\" sections.
+
+The block's own match string (\"TODO={DRAFT\\\\|TODO\\\\|DOING}\",
+not `LEVEL>0') already keeps every other heading in every agenda
+file -- journal entries, DONE items, plain notes, ... -- from ever
+reaching this function; it only has to decide whether a DRAFT/TODO/
+DOING entry is dated."
     (let ((keyword (org-get-todo-state)))
       (if (or (equal keyword "DRAFT")
               ;; Should this be only TODO?
@@ -1060,7 +1063,7 @@ progress\"/\"Needs review\" sections."
             ;; (see `pc/agenda-skip-unless-review-or-in-progress'),
             ;; split back into "In progress" (further along -- already
             ;; started) above "Needs review" via super-agenda groups.
-            (tags "LEVEL>0"
+            (tags "TODO={DRAFT\\|TODO\\|DOING}"
                   ((org-agenda-overriding-header "")
                    (org-agenda-skip-function
                     #'pc/agenda-skip-unless-review-or-in-progress)
