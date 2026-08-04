@@ -1156,12 +1156,39 @@ actually used here.
       (kill-new text)
       (message "Copied entry to kill ring")))
 
+  (defun pc/org-refile-subtree-to-tasks ()
+    "Refile the current subtree to the top of tasks.org -- a flat
+file, no heading structure (see the \"t\" capture template), so this
+just pastes it in at level 1."
+    (interactive)
+    (let ((tasks-buf (find-file-noselect (expand-file-name "tasks.org" org-directory))))
+      (org-cut-subtree)
+      ;; Set the continuation position when this function is called from org-map-entries
+      (setq org-map-continue-from (point))
+      (save-mark-and-excursion
+        (set-buffer tasks-buf)
+        (goto-char (point-min))
+        (org-paste-subtree 1)
+        (save-buffer))))
+
+  (defun pc/dispatch-todo ()
+    "Mark the entry TODO and refile it to tasks.org."
+    (interactive)
+    (org-todo "TODO")
+    (pc/org-refile-subtree-to-tasks))
+
+  (defun pc/dispatch-kill ()
+    "Mark the entry KILL and refile it to tasks.org."
+    (interactive)
+    (org-todo "KILL")
+    (pc/org-refile-subtree-to-tasks))
+
   (transient-define-prefix pc/dispatch-entry ()
     "Dispatch the current entry to its next state."
     ["Dispatch entry"
-     ("t" "TODO" (lambda () (interactive) (org-todo "TODO")))
+     ("t" "TODO" pc/dispatch-todo)
      ("j" "Journal (nothing to do)" pc/org-refile-subtree-to-journal)
-     ("k" "KILL" (lambda () (interactive) (org-todo "KILL")))
+     ("k" "KILL" pc/dispatch-kill)
      ("w" "Refile" org-refile)
      ("c" "Copy to clipboard" pc/org-copy-entry)])
 
