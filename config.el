@@ -515,7 +515,7 @@ DRAFT keyword loses its box and looks like plain text."
                  "Draft"
                  entry
                  (file "Inbox.org")
-                 "* DRAFT %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%a\n"
+                 "* DRAFT %U\n:PROPERTIES:\n:CREATED: %U\n:END:\n%?\n%a\n"
                  :prepend t))
 
   (defun pc/org-copy-entry ()
@@ -542,6 +542,51 @@ just pastes it in at level 1."
         (goto-char (point-min))
         (org-paste-subtree 1)
         (save-buffer))))
+
+  (defun pc/heading-is-bare-timestamp-p ()
+    "Return non-nil if the heading at point is just a capture
+timestamp (see the \"d\" capture template) -- i.e. a placeholder
+that's safe to overwrite via
+`pc/promote-first-body-line-to-heading', not a real, deliberately
+typed or auto-filled title (journal/task capture titles, protocol
+capture link descriptions, ...)."
+    (string-match-p "\\`\\[[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}"
+                     (org-get-heading t t t t)))
+
+  (defun pc/promote-first-body-line-to-heading ()
+    "If the heading at point is just a bare capture timestamp, move
+the first line of the body into the heading and delete that line
+from the body -- mirroring org-drafts'
+`org-drafts-default-body-function' (move first line of body to the
+title on state change). A no-op otherwise, so this is safe to call
+unconditionally before dispatching any entry, not just ones from the
+\"d\" capture template."
+    (when (pc/heading-is-bare-timestamp-p)
+      (save-excursion
+        (org-back-to-heading t)
+        (forward-line 1)
+        (when (looking-at-p "[ \t]*:PROPERTIES:")
+          (re-search-forward "^[ \t]*:END:")
+          (forward-line 1))
+        (while (and (looking-at-p "^[ \t]*$") (not (eobp)))
+          (forward-line 1))
+        (let* ((body-start (point))
+               (line-end (line-end-position))
+               (first-line (string-trim (buffer-substring-no-properties body-start line-end))))
+          (when (org-string-nw-p first-line)
+            (delete-region body-start (min (1+ line-end) (point-max)))
+            (org-edit-headline first-line))))))
+
+  (defun pc/promote-captured-draft ()
+    "After any capture finalizes, run `pc/promote-first-body-line-to-heading'
+on the just-captured entry -- a no-op unless it's still a bare
+capture timestamp."
+    (when org-capture-last-stored-marker
+      (org-with-point-at org-capture-last-stored-marker
+        (pc/promote-first-body-line-to-heading)
+        (save-buffer))))
+
+  (add-hook 'org-capture-after-finalize-hook #'pc/promote-captured-draft)
 
   (defun pc/dispatch-todo ()
     "Mark the entry TODO and refile it to tasks.org."
