@@ -564,12 +564,7 @@ unconditionally before dispatching any entry, not just ones from the
     (when (pc/heading-is-bare-timestamp-p)
       (save-excursion
         (org-back-to-heading t)
-        (forward-line 1)
-        (when (looking-at-p "[ \t]*:PROPERTIES:")
-          (re-search-forward "^[ \t]*:END:")
-          (forward-line 1))
-        (while (and (looking-at-p "^[ \t]*$") (not (eobp)))
-          (forward-line 1))
+        (org-end-of-meta-data t)
         (let* ((body-start (point))
                (line-end (line-end-position))
                (first-line (string-trim (buffer-substring-no-properties body-start line-end))))
