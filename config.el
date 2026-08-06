@@ -595,7 +595,13 @@ capture timestamp."
     (org-todo "KILL")
     (pc/org-refile-subtree-to-tasks))
 
-  (transient-define-prefix pc/dispatch-entry ()
+  ;; transient used to load incidentally via magit-todos' old eager
+;; startup load; now that magit-todos is properly deferred, this needs
+;; to be explicit. transient itself is small/built into Emacs 28+, so
+;; this is cheap.
+(require 'transient)
+
+(transient-define-prefix pc/dispatch-entry ()
     "Dispatch the current entry to its next state."
     ["Dispatch entry"
      ("t" "TODO" pc/dispatch-todo)
