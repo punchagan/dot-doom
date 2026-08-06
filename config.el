@@ -261,7 +261,8 @@
     :config
     (global-diff-hl-mode))
 
-  (use-package magit-todos
+  (use-package! magit-todos
+    :hook (magit-status-mode . magit-todos-mode)
     :config
     (setq magit-todos-exclude-globs '("*.css.map")))
 
@@ -343,6 +344,7 @@
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
 
 (use-package! okra
+  :defer t
   :custom
   (okra-tarides-admin-repo "~/code/segfault/admin")
   (okra-username "punchagan")
@@ -742,13 +744,14 @@ dated today -- the same entries counted by
                           "/org/gnome/shell/extensions/simple-message/message"
                           (format "'%d %s created today'"
                                   count (if (= count 1) "entry" "entries")))))))
-  (run-with-timer 0 60 #'pc/current-task-to-status)
+  (run-with-timer 30 60 #'pc/current-task-to-status)
   (add-hook 'org-clock-in-hook #'pc/current-task-to-status)
   (add-hook 'org-clock-out-hook #'pc/current-task-to-status)
   (add-hook 'org-clock-cancel-hook #'pc/current-task-to-status)
   (add-hook 'org-clock-goto-hook #'pc/current-task-to-status)
 
-(use-package! zulip-helpers)
+(use-package! zulip-helpers
+  :defer t)
 
   (defun pc/zulip-to-org (begin end)
     (interactive "r")
@@ -822,17 +825,38 @@ RECORDING-NAME's embedded timestamp."
   (require 'ob-emacs-lisp)
   (require 'ob-python)
 
+;; ox-reveal registers itself as an export backend when loaded, which
+;; is what makes "R" (Reveal.js) show up in the C-c C-e dispatcher --
+;; a bare :defer t would mean that never happens, since nothing else
+;; triggers the load. `ox' (the export machinery org-export-dispatch
+;; itself lives in) stays unloaded until an export is actually
+;; attempted -- unlike `org', which loads early regardless -- so
+;; deferring to it keeps ox-reveal out of startup while still getting
+;; a populated dispatcher menu the first time it's needed.
 (use-package! ox-reveal
-  :after org)
+  :defer t)
+(after! ox
+  (require 'ox-reveal))
 
-(use-package! ox-gist)
+;; Same reasoning as ox-reveal: registers an export backend on load,
+;; so needs an explicit trigger to appear in the C-c C-e dispatcher
+;; rather than staying fully dormant.
+(use-package! ox-gist
+  :defer t)
+(after! ox
+  (require 'ox-gist))
 
   (use-package! markdown-mode :defer t)
 
   (use-package! markdown-toc :defer t)
 
+;; Same reasoning as ox-reveal: registers an export backend on load,
+;; so needs an explicit trigger to appear in the C-c C-e dispatcher
+;; rather than staying fully dormant.
 (use-package! ox-hugo
-  :after ox)
+  :defer t)
+(after! ox
+  (require 'ox-hugo))
 
 (defun org-hugo-new-subtree-post-capture-template ()
   "Returns `org-capture' template string for new Hugo post."
@@ -1221,7 +1245,9 @@ else in the settings JSON is left untouched. NEW-NOTE-STATE (default
 (after! org
   (require 'org-bookmark-heading))
 
-(use-package! elfeed-web)
+(use-package! elfeed-web
+  :defer t
+  :commands (elfeed-web-start))
 
 (use-package! elfeed-goodies
   :bind
@@ -1262,13 +1288,13 @@ else in the settings JSON is left untouched. NEW-NOTE-STATE (default
 (add-hook 'elfeed-db-update-hook #'pc/elfeed-db-save-soon)
 
 (use-package! org-contacts
-  :after org)
+  :defer t)
 
 (add-to-list 'auto-mode-alist '("\\.org\\.txt\\'" . org-mode))
 
 (after! org
   (setq org-contacts-files
-        `(,(expand-file-name "contacts.org.txt" org-directory))))
+        `(,(expand-file-name "contacts.org" org-directory))))
 
 (use-package! howdy
   :custom

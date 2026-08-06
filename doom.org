@@ -717,7 +717,8 @@ For a full tutorial see [[http://jr0cket.co.uk/2012/12/driving-git-with-emacs-pu
 #+end_src
 
 #+BEGIN_SRC emacs-lisp
-  (use-package magit-todos
+  (use-package! magit-todos
+    :hook (magit-status-mode . magit-todos-mode)
     :config
     (setq magit-todos-exclude-globs '("*.css.map")))
 #+END_SRC
@@ -881,6 +882,7 @@ Ocaml LSP can't do everything that merlin does, yet!
 
 #+begin_src emacs-lisp
 (use-package! okra
+  :defer t
   :custom
   (okra-tarides-admin-repo "~/code/segfault/admin")
   (okra-username "punchagan")
@@ -1394,7 +1396,7 @@ dated today -- the same entries counted by
                           "/org/gnome/shell/extensions/simple-message/message"
                           (format "'%d %s created today'"
                                   count (if (= count 1) "entry" "entries")))))))
-  (run-with-timer 0 60 #'pc/current-task-to-status)
+  (run-with-timer 30 60 #'pc/current-task-to-status)
   (add-hook 'org-clock-in-hook #'pc/current-task-to-status)
   (add-hook 'org-clock-out-hook #'pc/current-task-to-status)
   (add-hook 'org-clock-cancel-hook #'pc/current-task-to-status)
@@ -1409,7 +1411,8 @@ dated today -- the same entries counted by
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package! zulip-helpers)
+(use-package! zulip-helpers
+  :defer t)
 #+end_src
 
 *** Convert markdown from Zulip (or Slack or GitHub) to org
@@ -1523,8 +1526,18 @@ RECORDING-NAME's embedded timestamp."
 #+end_src
 
 #+begin_src emacs-lisp
+;; ox-reveal registers itself as an export backend when loaded, which
+;; is what makes "R" (Reveal.js) show up in the C-c C-e dispatcher --
+;; a bare :defer t would mean that never happens, since nothing else
+;; triggers the load. `ox' (the export machinery org-export-dispatch
+;; itself lives in) stays unloaded until an export is actually
+;; attempted -- unlike `org', which loads early regardless -- so
+;; deferring to it keeps ox-reveal out of startup while still getting
+;; a populated dispatcher menu the first time it's needed.
 (use-package! ox-reveal
-  :after org)
+  :defer t)
+(after! ox
+  (require 'ox-reveal))
 #+end_src
 ** Org subtree to gist
 #+begin_src emacs-lisp :tangle packages.el
@@ -1532,7 +1545,13 @@ RECORDING-NAME's embedded timestamp."
             :recipe (:local-repo "~/code/my-repos/ox-gist"))
 #+end_src
 #+begin_src emacs-lisp
-(use-package! ox-gist)
+;; Same reasoning as ox-reveal: registers an export backend on load,
+;; so needs an explicit trigger to appear in the C-c C-e dispatcher
+;; rather than staying fully dormant.
+(use-package! ox-gist
+  :defer t)
+(after! ox
+  (require 'ox-gist))
 #+end_src
 ** Markdown
 #+BEGIN_SRC emacs-lisp
@@ -1549,8 +1568,13 @@ Previously, doom supported a +hugo flag to org. But, it no longer exists.
 (package! ox-hugo)
 #+end_src
 #+begin_src emacs-lisp
+;; Same reasoning as ox-reveal: registers an export backend on load,
+;; so needs an explicit trigger to appear in the C-c C-e dispatcher
+;; rather than staying fully dormant.
 (use-package! ox-hugo
-  :after ox)
+  :defer t)
+(after! ox
+  (require 'ox-hugo))
 #+end_src
 
 *** Capture template
@@ -2008,7 +2032,9 @@ else in the settings JSON is left untouched. NEW-NOTE-STATE (default
 #+end_src
 
 #+begin_src  emacs-lisp
-(use-package! elfeed-web)
+(use-package! elfeed-web
+  :defer t
+  :commands (elfeed-web-start))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2067,7 +2093,7 @@ Previously, doom supported a +contacts flag to org. But, it no longer exists.
 #+end_src
 #+begin_src emacs-lisp
 (use-package! org-contacts
-  :after org)
+  :defer t)
 #+end_src
 
 *** Use .org.txt as org-mode file
@@ -2078,7 +2104,7 @@ Previously, doom supported a +contacts flag to org. But, it no longer exists.
 #+begin_src emacs-lisp
 (after! org
   (setq org-contacts-files
-        `(,(expand-file-name "contacts.org.txt" org-directory))))
+        `(,(expand-file-name "contacts.org" org-directory))))
 #+end_src
 *** Configure Howdy
 #+begin_src emacs-lisp :tangle packages.el
