@@ -910,14 +910,6 @@ Some basic org-mode configuration
       '(("journal-.*\\.org\\'" . nil)
         (".*" . t)))
 
-;; The persisted org-element cache can go stale relative to whatever
-;; org-todo-keywords currently says (e.g. after changing the sequence),
-;; leaving a cached `:todo-type' out of sync with a heading's actual
-;; keyword. That silently breaks anything relying on `:todo-type', like
-;; `org-agenda-skip-scheduled-if-done'/`org-agenda-skip-deadline-if-done'.
-;; Keeping the cache in-memory only (rebuilt fresh each session) avoids it.
-(setq org-element-cache-persistent nil)
-
 ;; Deliberately minimal: each state earns its place by having an
 ;; actual use today. Add more (PROJ, STRT, HOLD, ...) only once
 ;; something concrete needs the distinction.
