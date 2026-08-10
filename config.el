@@ -1017,8 +1017,23 @@ END-DAY (inclusive).
 Counts are read off the habit's own state-change log lines (e.g. -
 State \"DONE\"       from \"\"           [2026-07-25 Sat 23:24] --
 see recurring.org), not a :LOGBOOK: drawer -- these habits log
-completions directly under the heading."
-  (let (counts)
+completions directly under the heading.
+
+Only scans agenda files that actually contain a :SHOW_IN_WEEKLY:
+property (a cheap raw-text pre-filter) rather than scope `'agenda',
+which would force `org-map-entries' to build/walk the org-element
+cache for every agenda file just to check one property on each of
+their headings -- painfully slow once those files add up to tens of
+thousands of lines."
+  (let* ((habit-files
+          (seq-filter
+           (lambda (f)
+             (with-temp-buffer
+               (insert-file-contents f)
+               (goto-char (point-min))
+               (search-forward ":SHOW_IN_WEEKLY:" nil t)))
+           (org-agenda-files)))
+         counts)
     (org-map-entries
      (lambda ()
        (when (org-entry-get nil "SHOW_IN_WEEKLY")
@@ -1030,13 +1045,17 @@ completions directly under the heading."
            (while (string-match
                    "- State \"DONE\"\\s-+from \"[^\"]*\"\\s-+\\[\\([^]]+\\)\\]"
                    body pos)
-             (when (<= start-day
-                       (time-to-days (org-time-string-to-time (match-string 1 body)))
-                       end-day)
-               (setq count (1+ count)))
-             (setq pos (match-end 0)))
+             ;; Grab match data before `org-time-string-to-time' runs its
+             ;; own regexp matching -- match-data is global, so calling it
+             ;; first would clobber `match-end' below and loop forever on
+             ;; the same match.
+             (let ((timestamp (match-string 1 body))
+                   (next-pos (match-end 0)))
+               (when (<= start-day (time-to-days (org-time-string-to-time timestamp)) end-day)
+                 (setq count (1+ count)))
+               (setq pos next-pos)))
            (push (cons heading count) counts))))
-     nil 'agenda)
+     nil habit-files)
     (nreverse counts)))
 
 (defun pc/habit-weekly-report (start-day end-day)
@@ -1118,7 +1137,14 @@ confirming."
     (let ((habits (pc/habit-weekly-report start-day end-day)))
       (when habits
         (org-paste-subtree 2 habits)))
-    (org-capture-finalize)))
+    ;; `org-hugo-auto-export-mode' only skips its after-save export
+    ;; while `real-this-command' is `org-capture-finalize' -- true
+    ;; when the user hits C-c C-c, but not for this plain Lisp call.
+    ;; Fake it so `pc/promote-captured-draft''s `save-buffer' (and
+    ;; capture's own save) doesn't trigger a premature Hugo export of
+    ;; a draft subtree that's still mid-assembly.
+    (let ((real-this-command 'org-capture-finalize))
+      (org-capture-finalize))))
 
 (defun pc/aggregate-subtree-tags ()
   "Set the tags on the headline at point to the union of its own
