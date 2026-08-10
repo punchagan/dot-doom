@@ -2255,6 +2255,76 @@ and subheadings (level 2) become =\section= with no forced page break.
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 #+end_src
 
+**** Standard manuscript format for submissions
+
+Publishers and agents expect submitted chapters in "standard
+manuscript format": 1in margins, 12pt Times New Roman, double-spaced,
+indented paragraphs (not the block-style spacing used for the =novel=
+class above), a running header of author-surname / title-word / page
+number on every page (including chapter-opening pages, which need the
+same =\chapter='s hard-coded =\thispagestyle{plain}= override worked
+around as before), and chapter headings dropped about a third of the
+way down the page. Set the header text per-story via
+=#+LATEX_HEADER: \renewcommand{\authorsurname}{Surname}= and
+=#+LATEX_HEADER: \renewcommand{\titleword}{TITLE}= (defaults below are
+placeholders so the class works out of the box).
+
+A submission also needs a manuscript-style title page (author contact
+info top-left, approximate word count, centered title/byline a third
+of the way down) rather than Org's default =\maketitle= title page.
+Set =#+OPTIONS: title:nil= to suppress the default, and add the title
+page as a raw LaTeX export block at the top of the file:
+
+#+begin_example
+,#+OPTIONS: title:nil
+,#+BEGIN_EXPORT latex
+\thispagestyle{empty}
+\noindent
+Your Name\\
+Your Address\\
+your.email@example.com
+
+\vspace*{0.3\textheight}
+\begin{center}
+{\Large YOUR TITLE}\\[1em]
+by\\[1em]
+Your Name
+\end{center}
+\vfill
+\noindent Approximately N,000 words
+\clearpage
+,#+END_EXPORT
+#+end_example
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'ox-latex
+  (add-to-list 'org-latex-classes
+               '("manuscript"
+                 "\\documentclass[12pt]{book}
+\\usepackage[margin=1in]{geometry}
+\\usepackage{times}
+\\usepackage{setspace}
+\\usepackage{etoolbox}
+\\usepackage{fancyhdr}
+\\usepackage{titlesec}
+\\doublespacing
+\\setlength{\\parindent}{0.5in}
+\\setlength{\\parskip}{0pt}
+\\newcommand{\\authorsurname}{Surname}
+\\newcommand{\\titleword}{TITLE}
+\\pagestyle{fancy}
+\\fancyhf{}
+\\fancyhead[R]{\\authorsurname\\ / \\titleword\\ / \\thepage}
+\\renewcommand{\\headrulewidth}{0pt}
+\\makeatletter
+\\patchcmd{\\chapter}{\\thispagestyle{plain}}{\\thispagestyle{fancy}}{}{}
+\\makeatother
+\\titleformat{\\chapter}[block]{\\normalfont\\centering\\large}{}{0pt}{}
+\\titlespacing*{\\chapter}{0pt}{0.35\\textheight}{40pt}"
+                 ("\\chapter{%s}" . "\\chapter*{%s}")
+                 ("\\section{%s}" . "\\section*{%s}"))))
+#+end_src
+
 * COMMENT Local Variables
 # Local Variables:
 # eval: (add-hook 'after-save-hook #'pc/tangle-doom-org nil 'local-to-this-file-please)

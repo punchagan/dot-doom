@@ -1391,3 +1391,30 @@ else in the settings JSON is left untouched. NEW-NOTE-STATE (default
                  ("\\section{%s}" . "\\section*{%s}")
                  ("\\subsection{%s}" . "\\subsection*{%s}")
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
+
+(with-eval-after-load 'ox-latex
+  (add-to-list 'org-latex-classes
+               '("manuscript"
+                 "\\documentclass[12pt]{book}
+\\usepackage[margin=1in]{geometry}
+\\usepackage{times}
+\\usepackage{setspace}
+\\usepackage{etoolbox}
+\\usepackage{fancyhdr}
+\\usepackage{titlesec}
+\\doublespacing
+\\setlength{\\parindent}{0.5in}
+\\setlength{\\parskip}{0pt}
+\\newcommand{\\authorsurname}{Surname}
+\\newcommand{\\titleword}{TITLE}
+\\pagestyle{fancy}
+\\fancyhf{}
+\\fancyhead[R]{\\authorsurname\\ / \\titleword\\ / \\thepage}
+\\renewcommand{\\headrulewidth}{0pt}
+\\makeatletter
+\\patchcmd{\\chapter}{\\thispagestyle{plain}}{\\thispagestyle{fancy}}{}{}
+\\makeatother
+\\titleformat{\\chapter}[block]{\\normalfont\\centering\\large}{}{0pt}{}
+\\titlespacing*{\\chapter}{0pt}{0.35\\textheight}{40pt}"
+                 ("\\chapter{%s}" . "\\chapter*{%s}")
+                 ("\\section{%s}" . "\\section*{%s}"))))
