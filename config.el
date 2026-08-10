@@ -984,9 +984,9 @@ any, removed entirely."
 (defun pc/collect-tagged-subtrees (tag start-day end-day)
   "Return the full text of every entry tagged TAG across
 `org-agenda-files' whose date (`pc/entry-date-at-point') falls
-between START-DAY and END-DAY, inclusive. Entries are left in place;
-this only reads and copies. Each entry's own property drawer is
-stripped from the copy.
+between START-DAY and END-DAY, inclusive, ordered chronologically by
+that date. Entries are left in place; this only reads and copies.
+Each entry's own property drawer is stripped from the copy.
 
 Skips blog-posts.org and draft-blog-posts.org -- these hold the
 weekly posts themselves (and drafts thereof), so scanning them here
@@ -999,13 +999,14 @@ themselves."
      (lambda ()
        (let ((date (pc/entry-date-at-point)))
          (when (and date (<= start-day date end-day))
-           (push (pc/strip-property-drawer
-                  (buffer-substring-no-properties
-                   (point) (save-excursion (org-end-of-subtree t t) (point))))
+           (push (cons date
+                       (pc/strip-property-drawer
+                        (buffer-substring-no-properties
+                         (point) (save-excursion (org-end-of-subtree t t) (point)))))
                  entries))))
      tag
      (seq-remove (lambda (f) (member f blog-files)) (org-agenda-files)))
-    (nreverse entries)))
+    (mapcar #'cdr (sort entries (lambda (a b) (< (car a) (car b)))))))
 
 (defun pc/habit-weekly-counts (start-day end-day)
   "Return an alist of (HEADING . COUNT) for every entry across
