@@ -1900,6 +1900,62 @@ confirming."
     (let ((real-this-command 'org-capture-finalize))
       (org-capture-finalize))))
 
+(defun pc/review-weekly-candidates (tag start end)
+  "Show, in a normal Org tags-search agenda buffer, every entry
+across `org-agenda-files' dated (`pc/entry-date-at-point') between
+START and END that ISN'T tagged TAG -- a quick pre-`pc/create-weekly'
+review of what might be worth tagging in before running it.
+Interactively prompts for TAG (defaulting to \"weekly\", same as
+`pc/create-weekly') and the date range (defaulting to the last 7
+days).
+
+Delegates the tag exclusion to `org-tags-view' itself (native, so it
+gets the usual agenda tag-matching semantics for free) and layers the
+date-range check on top via `org-agenda-skip-function' -- Org's own
+match-string syntax can express property comparisons, but not
+cleanly against a range computed from today's date, so this is done
+in Lisp instead, reusing `pc/entry-date-at-point' the same way
+`pc/collect-tagged-subtrees' and `pc/habit-weekly-counts' do.
+
+The skip function only advances past the CURRENT heading (via
+`outline-next-heading') when it doesn't qualify, not its whole
+subtree (`org-end-of-subtree' would jump past all descendants too)
+-- journal entries nest under dateless year/month/day container
+headings with no :CREATED: of their own, so skipping a container's
+whole subtree because IT has no date would silently skip every
+dated entry underneath it as well.
+
+`org-tags-view' also stamps a `org-redo-cmd' TEXT PROPERTY across the
+whole buffer -- baked from its own hardcoded call back to itself and
+the bare tag match string -- right before marking the buffer
+read-only. That's what `g' (`org-agenda-redo') actually reads, not
+the `org-agenda-redo-command' variable directly, and it's already
+done by the time `org-tags-view' returns here, so merely re-`setq'ing
+that variable afterward has no effect. Overwrite the same text
+property directly instead, so `g' re-applies the same filtering."
+  (interactive
+   (let* ((tag (let ((org-last-tags-completion-table
+                      (org-global-tags-completion-table (org-agenda-files))))
+                 (completing-read "Entries not tagged: "
+                                   org-last-tags-completion-table
+                                   nil t nil nil "weekly")))
+          (start (org-read-date nil t nil "Start date"
+                                 (time-subtract (current-time) (days-to-time 7))))
+          (end (org-read-date nil t nil "End date")))
+     (list tag start end)))
+  (let* ((start-day (time-to-days start))
+         (end-day (time-to-days end))
+         (org-agenda-skip-function
+          (lambda ()
+            (let ((date (pc/entry-date-at-point)))
+              (unless (and date (<= start-day date end-day))
+                (save-excursion (or (outline-next-heading) (goto-char (point-max))) (point)))))))
+    (org-tags-view nil (concat "-" tag)))
+  (let ((inhibit-read-only t))
+    (add-text-properties
+     (point-min) (point-max)
+     (list 'org-redo-cmd `(pc/review-weekly-candidates ,tag ',start ',end)))))
+
 (defun pc/aggregate-subtree-tags ()
   "Set the tags on the headline at point to the union of its own
 tags and every tag used on any headline within its subtree (own
