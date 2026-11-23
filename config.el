@@ -765,10 +765,10 @@ dated today -- the same entries counted by
 
   (defun pc/voice-note-created-timestamp (recording-name)
     "Return an inactive Org timestamp string for RECORDING-NAME's
-embedded capture time (e.g. \"voice-20260804T153000\", from the
-phone-side capture script's filename), or the current time if it
-doesn't match that pattern."
-    (if (string-match "voice-\\([0-9]\\{8\\}\\)T\\([0-9]\\{6\\}\\)" recording-name)
+embedded capture time (e.g. \"20261123_093855\", the voice-recorder
+app's filename), or the current time if it doesn't match that
+pattern."
+    (if (string-match "\\([0-9]\\{8\\}\\)_\\([0-9]\\{6\\}\\)" recording-name)
         (let* ((d (match-string 1 recording-name))
                (tm (match-string 2 recording-name))
                (time (encode-time
@@ -781,7 +781,7 @@ doesn't match that pattern."
           (format-time-string (org-time-stamp-format :long :inactive) time))
       (format-time-string (org-time-stamp-format :long :inactive))))
 
-  (defun pc/file-voice-transcript-as-draft (txt-file created)
+  (defun pc/file-voice-transcript-as-draft (txt-file created &optional audio-file)
     "Insert TXT-FILE's contents as a new level-1 DRAFT entry at the top
 of Inbox.org -- same shape as the \"d\" capture template. The
 transcript's first line becomes the heading and the rest becomes the
@@ -789,26 +789,34 @@ body, mirroring org-drafts' `org-drafts-default-body-function' (move
 first line of body to the title) -- Whisper's .txt output already
 has one line per segment/sentence, so this lines up naturally. CREATED
 is an inactive Org timestamp string for the entry's :CREATED:
-property."
+property. If AUDIO-FILE is given, a link to it goes on the first line
+of the body, so the recording can be replayed when the transcript
+isn't clear."
     (let* ((text (string-trim (with-temp-buffer
                                  (insert-file-contents txt-file)
                                  (buffer-string))))
            (nl (string-match "\n" text))
            (title (string-trim (if nl (substring text 0 nl) text)))
            (body (if nl (string-trim (substring text (1+ nl))) ""))
-           (entry (format "* DRAFT %s\n:PROPERTIES:\n:CREATED: %s\n:END:\n%s\n"
-                           title created body)))
+           (audio (if audio-file
+                      (format "Audio: [[file:%s][%s]]\n"
+                              (abbreviate-file-name audio-file)
+                              (file-name-nondirectory audio-file))
+                    ""))
+           (entry (format "* DRAFT %s\n:PROPERTIES:\n:CREATED: %s\n:END:\n%s%s\n"
+                           title created audio body)))
       (with-current-buffer (find-file-noselect (expand-file-name "Inbox.org" org-directory))
         (goto-char (point-min))
         (org-paste-subtree 1 entry)
         (save-buffer))))
 
-  (defun pc/capture-voice-note (txt-file recording-name)
+  (defun pc/capture-voice-note (txt-file recording-name &optional audio-file)
     "Entry point for process-voice-notes.sh (via emacsclient): file
 TXT-FILE's transcript into Inbox.org as a DRAFT, dated from
-RECORDING-NAME's embedded timestamp."
+RECORDING-NAME's embedded timestamp and linking to AUDIO-FILE (the
+path the recording will have once processed) when given."
     (pc/file-voice-transcript-as-draft
-     txt-file (pc/voice-note-created-timestamp recording-name)))
+     txt-file (pc/voice-note-created-timestamp recording-name) audio-file))
 
   (setq org-babel-load-languages '((emacs-lisp . t)
                                    (python . t)
