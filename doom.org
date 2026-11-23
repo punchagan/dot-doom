@@ -1446,19 +1446,23 @@ Template expansion!
 #+end_src
 *** Process voice notes from phone
 
-The phone side (=~/code/my-repos/android-dotfiles=, a separate repo)
-records via Termux, then rsyncs the file up to a drop directory on
-=muse-amuse.in= as soon as recording stops -- no cron/background
-service, since Android's Doze/battery management doesn't reliably
-keep those alive. The server is a pure relay; nothing is installed
-or processed there.
+On the phone, a voice-recorder app saves recordings into
+=~/storage/music/Recordings/Voice Notes/=. A cron job in Termux
+(=bin/sync-voice-notes.sh= in =~/code/my-repos/android-dotfiles=, a
+separate repo) runs every 30 minutes and rsyncs the finished ones to a
+drop directory on =muse-amuse.in=, then moves them into an =uploaded/=
+subfolder so they aren't sent twice. crond is started at boot with a
+wake lock to keep it alive; see that repo's README. The server is a
+pure relay; nothing is installed or processed there.
 
 Everything else -- pulling what's queued and transcribing it with
 Whisper -- is orchestration/shell work, done by
 =~/.life-in-plain-text/process-voice-notes.sh=, not Emacs. That
 script calls into Emacs only for the one piece that actually needs
 it: filing the finished transcript into Inbox.org as a DRAFT, same
-shape as the "d" capture template.
+shape as the "d" capture template. Each entry starts with an Audio:
+link to the recording (kept in =~/voice-capture/processed/= for a
+year), so it can be replayed when the transcript isn't clear.
 
 #+begin_src emacs-lisp
   (defun pc/voice-note-created-timestamp (recording-name)
