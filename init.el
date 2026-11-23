@@ -99,7 +99,7 @@
          ;;ein               ; tame Jupyter notebooks with emacs
          (eval +overlay)     ; run code, run (also, repls)
          lookup              ; navigate your code and its documentation
-         lsp               ; M-x vscode
+         (lsp +eglot)               ; M-x vscode
          (magit +forge)             ; a git porcelain for Emacs
          make              ; run make tasks from Emacs
          ;;pass              ; password manager for nerds
@@ -156,12 +156,12 @@
          markdown          ; writing docs for people to ignore
          ;;nim               ; python + lisp at the speed of c
          ;;nix               ; I hereby declare "nix geht mehr!"
-         (ocaml +lsp)               ; an objective camel
+         ocaml               ; an objective camel
          (org +noter)        ; organize your plain life in plain text
          ;;php               ; perl's insecure younger brother
          ;;plantuml          ; diagrams for confusing people more
          ;;purescript        ; javascript, but functional
-         (python +lsp +pyright +pyenv +tree-sitter)            ; beautiful is better than ugly
+         (python +lsp +tree-sitter +uv)            ; beautiful is better than ugly
          ;;qt                ; the 'cutest' gui framework ever
          ;;racket            ; a DSL for DSLs
          ;;raku              ; the artist formerly known as perl6

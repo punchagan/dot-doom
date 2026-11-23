@@ -234,6 +234,9 @@
       (kill-new filename)
       (message filename)))
 
+(with-eval-after-load 'python
+  (set-eglot-client! '(python-mode python-ts-mode) '("ty" "server")))
+
   (use-package! magit
     :bind
     ("C-x g" . magit-status-here)

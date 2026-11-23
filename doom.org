@@ -328,7 +328,7 @@ here as-is for now, as it is quite well structured and clear.
          ;;ein               ; tame Jupyter notebooks with emacs
          (eval +overlay)     ; run code, run (also, repls)
          lookup              ; navigate your code and its documentation
-         lsp               ; M-x vscode
+         (lsp +eglot)               ; M-x vscode
          (magit +forge)             ; a git porcelain for Emacs
          make              ; run make tasks from Emacs
          ;;pass              ; password manager for nerds
@@ -385,12 +385,12 @@ here as-is for now, as it is quite well structured and clear.
          markdown          ; writing docs for people to ignore
          ;;nim               ; python + lisp at the speed of c
          ;;nix               ; I hereby declare "nix geht mehr!"
-         (ocaml +lsp)               ; an objective camel
+         ocaml               ; an objective camel
          (org +noter)        ; organize your plain life in plain text
          ;;php               ; perl's insecure younger brother
          ;;plantuml          ; diagrams for confusing people more
          ;;purescript        ; javascript, but functional
-         (python +lsp +pyright +pyenv +tree-sitter)            ; beautiful is better than ugly
+         (python +lsp +tree-sitter +uv)            ; beautiful is better than ugly
          ;;qt                ; the 'cutest' gui framework ever
          ;;racket            ; a DSL for DSLs
          ;;raku              ; the artist formerly known as perl6
@@ -664,6 +664,12 @@ Code from https://www.reddit.com/r/emacs/comments/idz35e/comment/g2c2c6y/
 
 #+end_src
 * Programming
+** Python
+Set ty as the preffered LSP server
+#+begin_src emacs-lisp
+(with-eval-after-load 'python
+  (set-eglot-client! '(python-mode python-ts-mode) '("ty" "server")))
+#+end_src
 ** magit and git related stuff
 
 For a full tutorial see [[http://jr0cket.co.uk/2012/12/driving-git-with-emacs-pure-magic-with.html.html][jr0cket's blog]].
@@ -888,7 +894,6 @@ Ocaml LSP can't do everything that merlin does, yet!
   (okra-username "punchagan")
   (okra-team-members '("Alizter" "ElectreAAS" "art-w" "Leonidas-from-XIV" "punchagan" "shonfeder" "Sudha247")))
 #+end_src
-
 * Prose and Literate Programming
 ** Org mode
 Some basic org-mode configuration
