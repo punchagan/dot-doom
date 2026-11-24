@@ -1232,6 +1232,32 @@ from `pc/create-weekly' itself."
        nil 'tree))
     (org-set-tags (delete-dups tags))))
 
+(defun pc/rename-file-link (new-name)
+  "Rename the file linked at point to NEW-NAME and update the link.
+The extension and directory are kept.  Meant for the photo thumbnails in
+the picks.org that `weekly picks' writes: rename a photo by what it shows,
+then copy the (now updated) link into a draft post.  ox-hugo copies images
+by basename, so use names that are unique across posts."
+  (interactive "sNew name (no extension): ")
+  (let ((link (org-element-context)))
+    (unless (and (eq (org-element-type link) 'link)
+                 (equal (org-element-property :type link) "file"))
+      (user-error "Not on a file link"))
+    (let* ((old (expand-file-name (org-element-property :path link)))
+           (new (expand-file-name
+                 (concat new-name "." (file-name-extension old))
+                 (file-name-directory old)))
+           (beg (org-element-property :begin link))
+           (end (- (org-element-property :end link)
+                   (org-element-property :post-blank link))))
+      (when (file-exists-p new) (user-error "%s already exists" new))
+      (rename-file old new)
+      (save-excursion
+        (delete-region beg end)
+        (goto-char beg)
+        (insert (format "[[file:%s]]" (abbreviate-file-name new))))
+      (org-redisplay-inline-images))))
+
 (defun pc/journal-file-for-time (time)
   "Return the journal file that should hold an entry dated TIME.
 Every year's entries go to their own journal-<year>.org."
