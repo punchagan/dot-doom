@@ -95,6 +95,11 @@
 
 (package! ox-hugo)
 
+(package! image-triage
+  :recipe (:host github :repo "larsmagne/image-triage.el"
+           :files ("*.el" "jpgpreview")
+           :pre-build ("make")))
+
 (package! org-bookmark-heading)
 
 (package! elfeed-web

@@ -2020,6 +2020,28 @@ by basename, so use names that are unique across posts."
       (org-redisplay-inline-images))))
 #+end_src
 
+*** Photo triage with image-triage
+
+[[https://github.com/larsmagne/image-triage.el][image-triage]] is a fast grid view for choosing photos, e.g. from a week
+folder written by =weekly picks= (=M-x image-triage-tree=).  Mark with =m=,
+copy the marked files with =C=.  It needs =imagemagick= and =exiftool=;
+=make= builds the optional =jpgpreview= helper (needs a C compiler), which
+speeds up thumbnails.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! image-triage
+  :recipe (:host github :repo "larsmagne/image-triage.el"
+           :files ("*.el" "jpgpreview")
+           :pre-build ("make")))
+#+end_src
+
+The package has no autoload cookies, so declare the entry points here.
+
+#+begin_src emacs-lisp
+(use-package! image-triage
+  :commands (image-triage-directory image-triage-tree))
+#+end_src
+
 ** Inbox.org / Mobile.org (Orgzly) refile
 *** Refile single subtree
 #+begin_src emacs-lisp

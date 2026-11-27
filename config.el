@@ -1259,6 +1259,9 @@ by basename, so use names that are unique across posts."
         (insert (format "[[file:%s]]" (abbreviate-file-name new))))
       (org-redisplay-inline-images))))
 
+(use-package! image-triage
+  :commands (image-triage-directory image-triage-tree))
+
 (defun pc/journal-file-for-time (time)
   "Return the journal file that should hold an entry dated TIME.
 Every year's entries go to their own journal-<year>.org."
