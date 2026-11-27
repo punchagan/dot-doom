@@ -274,6 +274,7 @@
   (use-package! projectile
     :custom
     (projectile-project-search-path `((,pc/code-directory . 4)))
+    (projectile-auto-discover nil)
     (projectile-indexing-method 'alien)
     (projectile-sort-order 'recently-active)
     :bind (:map projectile-mode-map
